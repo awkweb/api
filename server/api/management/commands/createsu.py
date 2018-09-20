@@ -6,13 +6,11 @@ class Command(BaseCommand):
     help = 'Creates a super user for when TTY mode is unavailable'
 
     def add_arguments(self, parser):
-        parser.add_argument('username', nargs='?')
         parser.add_argument('email', nargs='?')
         parser.add_argument('password', nargs='?')
 
     def handle(self, *args, **options):
-        username = options['username']
-        if not get_user_model().objects.filter(username=username).exists():
-            email = options['email']
+        email = options['email']
+        if not get_user_model().objects.filter(email=email).exists():
             password = options['password']
-            get_user_model().objects.create_superuser(username, email, password)
+            get_user_model().objects.create_superuser(email, password)
