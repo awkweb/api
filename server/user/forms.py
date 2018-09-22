@@ -8,6 +8,7 @@ from django.contrib.auth import (
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.utils.translation import ugettext_lazy as _
 
+
 UserModel = get_user_model()
 
 
@@ -16,7 +17,6 @@ class AuthenticationForm(forms.Form):
     Base class for authenticating users. Extend this to get a form that accepts
     email/password logins.
     """
-
     email = forms.EmailField(
         label=_("Email address"),
         max_length=254,
@@ -107,7 +107,6 @@ class UserCreationForm(forms.ModelForm):
     A form that creates a user, with no privileges, from the given email and
     password.
     """
-
     error_messages = {
         'password_mismatch': _("The two password fields didn't match."),
     }

@@ -7,7 +7,7 @@ colorama==0.3.7
 defusedxml==0.5.0
 Django==2.0.3
 django-braces==1.12.0
-django-oauth-toolkit==1.0.0
+django-cors-headers==2.4.0
 djangorestframework==3.8.2
 djangorestframework-gis==0.12
 dockerpty==0.4.1

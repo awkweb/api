@@ -1,4 +1,5 @@
 from .base import *
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ["*"]
+CORS_ORIGIN_WHITELIST = ("budget.local",)
 DEBUG = True

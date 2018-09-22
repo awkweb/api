@@ -1,11 +1,16 @@
-# from django.db import models
+from django.conf import settings
 from django.contrib.gis.db import models
 from django.contrib.auth.models import (
-    BaseUserManager, PermissionsMixin, AbstractBaseUser
+    BaseUserManager,
+    PermissionsMixin,
+    AbstractBaseUser
 )
 from django.core.mail import send_mail
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
+from rest_framework.authtoken.models import Token
 
 
 class UserManager(BaseUserManager):
@@ -15,7 +20,6 @@ class UserManager(BaseUserManager):
         """
         Create and save a user with the given email and password.
         """
-
         if not email:
             raise ValueError('The given email must be set')
         email = self.normalize_email(email)
@@ -48,7 +52,6 @@ class AbstractUser(AbstractBaseUser, PermissionsMixin):
 
     Email and password are required. Other fields are optional.
     """
-
     email = models.EmailField(
         _('email address'),
         unique=True,
@@ -91,7 +94,6 @@ class AbstractUser(AbstractBaseUser, PermissionsMixin):
         """
         Return the first_name plus the last_name, with a space in between.
         """
-
         full_name = '%s %s' % (self.first_name, self.last_name)
         return full_name.strip()
 
@@ -99,14 +101,12 @@ class AbstractUser(AbstractBaseUser, PermissionsMixin):
         """
         Return the short name for the user.
         """
-
         return self.first_name
 
     def email_user(self, subject, message, from_email=None, **kwargs):
         """
         Send an email to this user.
         """
-
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
 
@@ -117,9 +117,13 @@ class User(AbstractUser):
 
     Password and email are required. Other fields are optional.
     """
-
     class Meta(AbstractUser.Meta):
         swappable = 'AUTH_USER_MODEL'
+
+    @receiver(post_save, sender=settings.AUTH_USER_MODEL)
+    def create_auth_token(sender, instance=None, created=False, **kwargs):
+        if created:
+            Token.objects.create(user=instance)
 
     @staticmethod
     def has_read_permission(request):
