@@ -11,12 +11,10 @@ class PlaidToken(models.Model):
     """
 
     value = models.CharField(_("value"), max_length=100)
-    user = models.ForeignKey(
-        _("user"), settings.AUTH_USER_MODEL, on_delete=models.CASCADE
-    )
-    institution = models.ForeignKey(
-        _("institution"), Institution, on_delete=models.CASCADE
-    )
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    institution = models.ForeignKey(Institution, on_delete=models.CASCADE)
 
     class Meta:
+        db_table = "api_plaid_token"
+        verbose_name = "plaid token"
         verbose_name_plural = "plaid tokens"

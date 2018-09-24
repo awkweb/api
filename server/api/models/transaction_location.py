@@ -15,4 +15,6 @@ class TransactionLocation(models.Model):
     lon = models.FloatField(verbose_name="longitude")
 
     class Meta:
+        db_table = "api_transaction_location"
+        verbose_name = "transaction location"
         verbose_name_plural = "transaction locations"

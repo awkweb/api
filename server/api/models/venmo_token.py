@@ -10,9 +10,9 @@ class VenmoToken(models.Model):
 
     value = models.CharField(_("value"), max_length=100)
     venmo_username = models.CharField(_("venmo_username"), max_length=100)
-    user = models.ForeignKey(
-        _("user"), settings.AUTH_USER_MODEL, on_delete=models.CASCADE
-    )
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     class Meta:
+        db_table = "api_venmo_token"
+        verbose_name = "venmo token"
         verbose_name_plural = "venmo tokens"

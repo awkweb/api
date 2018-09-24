@@ -12,4 +12,6 @@ class TransactionPaymentMeta(models.Model):
     payee_name = models.CharField(_("payee_name"), max_length=50)
 
     class Meta:
+        db_table = "api_transaction_payment_meta"
+        verbose_name = "transaction payment meta"
         verbose_name_plural = "transaction payment meta"

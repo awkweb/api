@@ -11,13 +11,13 @@ class BudgetCategory(models.Model):
     """
 
     name = models.CharField(_("name"), max_length=25)
-    user = models.ForeignKey(
-        _("user"), settings.AUTH_USER_MODEL, on_delete=models.CASCADE
-    )
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     date_created = models.DateTimeField(_("date_created"), default=timezone.now)
 
     class Meta:
         ordering = ["name"]
+        db_table = "api_budget_category"
+        verbose_name = "budget category"
         verbose_name_plural = "budget categories"
 
     def __str__(self):

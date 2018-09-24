@@ -20,6 +20,7 @@ class Budget(models.Model):
     date_created = models.DateTimeField(_("date_created"), default=timezone.now)
 
     class Meta:
+
         verbose_name_plural = "budgets"
 
     def __str__(self):

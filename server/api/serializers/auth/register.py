@@ -2,7 +2,6 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
-from ...utils import email_address_exists
 
 
 class RegisterSerializer(serializers.Serializer):
@@ -10,8 +9,11 @@ class RegisterSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
     password_confirm = serializers.CharField(write_only=True)
 
+    def email_address_exists(self, email):
+        return get_user_model().objects.filter(email__iexact=email).exists()
+
     def validate_email(self, email):
-        if email and email_address_exists(email):
+        if email and self.email_address_exists(email):
             raise serializers.ValidationError(
                 _("A user is already registered with this e-mail address.")
             )
