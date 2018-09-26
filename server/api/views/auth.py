@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.debug import sensitive_post_parameters
@@ -9,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from ..lib import PlaidClient
 from ..serializers import LinkPlaidSerializer, LoginSerializer, RegisterSerializer
-from ..models import PlaidToken
+from ..models import Account, Institution, PlaidToken
 
 plaid = PlaidClient()
 sensitive_post_parameters_m = method_decorator(
@@ -25,14 +26,34 @@ class LinkPlaidView(GenericAPIView):
     def dispatch(self, *args, **kwargs):
         return super(LinkPlaidView, self).dispatch(*args, **kwargs)
 
+    @transaction.atomic
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        public_token = serializer.validated_data["public_token"]
-        access_token = plaid.get_access_token(public_token)
-        plaid_token = PlaidToken(value=access_token, user=request.auth.user)
-        print(plaid_token)
-        # plaid_token.save()
+        institution_data = serializer.validated_data["institution"]
+        institution, created = Institution.objects.get_or_create(
+            institution_id=institution_data.get("institution_id"),
+            name=institution_data.get("name"),
+        )
+
+        user = request.auth.user
+        accounts = serializer.validated_data["accounts"]
+        for account in accounts:
+            Account.objects.create(
+                account_id=account.get("account_id"),
+                mask=account.get("mask"),
+                name=account.get("name"),
+                subtype=account.get("subtype"),
+                type=account.get("type"),
+                user=user,
+                institution=institution,
+            )
+
+        public_token = serializer.validated_data["token"]
+        access_token, item_id = plaid.get_access_token(public_token)
+        PlaidToken.objects.create(
+            item_id=item_id, institution=institution, user=user, value=access_token
+        )
         return Response({}, status=status.HTTP_200_OK, headers={})
 
 

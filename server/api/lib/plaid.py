@@ -20,7 +20,7 @@ class PlaidClient:
             environment=os.environ["PLAID_ENV"],
         )
 
-    def format_date(self, date):
+    def __format_date(self, date):
         return f"{date:%Y-%m-%d}"
 
     def get_access_token(self, public_token):
@@ -29,10 +29,11 @@ class PlaidClient:
         Args:
             public_token: Token created by plaid link
         Returns:
-            TODO
+            access_token
+            item_id
         """
         response = self._client.Item.public_token.exchange(public_token)
-        return response["access_token"]
+        return response["access_token"], response["item_id"]
 
     def get_transactions(
         self,
@@ -48,10 +49,10 @@ class PlaidClient:
             start: Start date for the transaction history set. Default one month before today.
             end: End date for the transaction history set. Default today.
         Returns:
-            TODO
+            transactions
         """
-        start_date = self.format_date(start)
-        end_date = self.format_date(end)
+        start_date = self.__format_date(start)
+        end_date = self.__format_date(end)
         response = self._client.Transactions.get(
             access_token, start_date=start_date, end_date=end_date
         )

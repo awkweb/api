@@ -10,6 +10,7 @@ class PlaidToken(models.Model):
     Institutions have many PlaidTokens but an PlaidTokens has only one Institution.
     """
 
+    item_id = models.CharField(_("item_id"), max_length=100)
     value = models.CharField(_("value"), max_length=100)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     institution = models.ForeignKey(Institution, on_delete=models.CASCADE)

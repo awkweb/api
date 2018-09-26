@@ -12,12 +12,12 @@ class Account(models.Model):
     An Account has many Transactions but a Transaction can have only one Account.
     """
 
-    account_id = models.CharField(_("institution_id"), max_length=50)
-    account_subtype = models.CharField(_("account_subtype"), max_length=50)
-    account_type = models.CharField(_("account_type"), max_length=50)
+    account_id = models.CharField(_("account_id"), max_length=50)
     mask = models.CharField(_("mask"), max_length=4)
     name = models.CharField(_("name"), max_length=100)
     official_name = models.CharField(_("official_name"), max_length=100)
+    subtype = models.CharField(_("subtype"), max_length=50)
+    type = models.CharField(_("type"), max_length=50)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     institution = models.ForeignKey(
         Institution, on_delete=models.CASCADE, related_name="accounts"

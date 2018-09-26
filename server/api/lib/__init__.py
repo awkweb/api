@@ -1,1 +1,2 @@
+from .dynamic_fields_model_serializer import DynamicFieldsModelSerializer
 from .plaid import PlaidClient
