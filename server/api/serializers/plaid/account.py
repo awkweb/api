@@ -1,5 +1,5 @@
-from ..lib import DynamicFieldsModelSerializer
-from ..models import Account
+from ...lib import DynamicFieldsModelSerializer
+from ...models import Account
 
 
 class AccountSerializer(DynamicFieldsModelSerializer):
@@ -9,7 +9,6 @@ class AccountSerializer(DynamicFieldsModelSerializer):
             "account_id",
             "mask",
             "name",
-            "official_name",
             "subtype",
             "type",
             "user",

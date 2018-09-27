@@ -1,10 +1,10 @@
+import uuid
 from django.conf import settings
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.utils.translation import ugettext_lazy as _
-from .account import Account
+from .plaid import Account, Category
 from .budget import Budget
-from .category import Category
 from .transaction_location import TransactionLocation
 from .transaction_payment_meta import TransactionPaymentMeta
 
@@ -27,6 +27,7 @@ class Transaction(models.Model):
     A Transaction has many Categories and a Category has many Transactions.
     """
 
+    id = models.UUIDField(_("id"), primary_key=True, default=uuid.uuid4, editable=False)
     amount = models.DecimalField(_("amount"), max_digits=10, decimal_places=2)
     category_hierarchy = (
         _("category_hierarchy"),
@@ -47,21 +48,47 @@ class Transaction(models.Model):
         _("unofficial_currency_code"), blank=True, max_length=10
     )
     account = models.ForeignKey(
-        Account, on_delete=models.CASCADE, related_name="transactions"
+        Account,
+        on_delete=models.CASCADE,
+        related_name="transactions",
+        verbose_name=_("account"),
     )
     budget = models.ForeignKey(
-        Budget, on_delete=models.CASCADE, related_name="transactions"
+        Budget,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        related_name="transactions",
+        verbose_name=_("budget"),
     )
     category = models.ForeignKey(
-        Category, models.SET_NULL, blank=True, null=True, related_name="transactions"
+        Category,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="transactions",
+        verbose_name=_("category"),
     )
     transaction_location = models.OneToOneField(
-        TransactionLocation, on_delete=models.CASCADE, related_name="transactions"
+        TransactionLocation,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        related_name="transactions",
+        verbose_name=_("transaction location"),
     )
     transaction_payment_meta = models.OneToOneField(
-        TransactionPaymentMeta, on_delete=models.CASCADE, related_name="transactions"
+        TransactionPaymentMeta,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        related_name="transactions",
+        verbose_name=_("transaction payment meta"),
     )
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_("user")
+    )
 
     class Meta:
-        verbose_name_plural = "accounts"
+        indexes = [models.Index(fields=["transaction_id"])]
+        verbose_name_plural = "transactions"

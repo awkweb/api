@@ -7,12 +7,9 @@ from ..serializers import UserSerializer
 
 class UserViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows users to be created, viewed, or edited.
+    API endpoint that allows Users to be created, viewed, or edited.
     """
 
-    permission_classes = (
-        IsAuthenticated,
-        DRYPermissions,
-    )
+    permission_classes = (IsAuthenticated, DRYPermissions)
     queryset = get_user_model().objects.all()
     serializer_class = UserSerializer

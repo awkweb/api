@@ -1,6 +1,5 @@
 from rest_framework import serializers
-from ..account import AccountSerializer
-from ..institution import InstitutionSerializer
+from ..plaid import AccountSerializer, InstitutionSerializer
 
 
 class LinkPlaidSerializer(serializers.Serializer):

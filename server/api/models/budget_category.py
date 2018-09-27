@@ -1,3 +1,4 @@
+import uuid
 from django.conf import settings
 from django.contrib.gis.db import models
 from django.utils import timezone
@@ -10,6 +11,7 @@ class BudgetCategory(models.Model):
     A BudgetCategory has many Budgets but a Budget has only one BudgetCategory.
     """
 
+    id = models.UUIDField(_("id"), primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(_("name"), max_length=25)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     date_created = models.DateTimeField(_("date_created"), default=timezone.now)

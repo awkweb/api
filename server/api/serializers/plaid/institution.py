@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from ..models import Institution
+from ...models import Institution
 
 
 class InstitutionSerializer(serializers.ModelSerializer):

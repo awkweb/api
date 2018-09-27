@@ -8,12 +8,16 @@ plaid = PlaidClient()
 
 
 class FetchTransactionsView(GenericAPIView):
+    """
+    API endpoint that fetches Transactions
+    """
+
     permission_classes = IsAuthenticated
 
     def get(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = get_user(request)
+        user = request.auth.user
         public_token = serializer.validated_data["public_token"]
         access_token = plaid.get_access_token(public_token)
         transactions = plaid.get_transactions(access_token)

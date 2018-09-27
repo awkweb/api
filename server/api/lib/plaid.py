@@ -35,6 +35,17 @@ class PlaidClient:
         response = self._client.Item.public_token.exchange(public_token)
         return response["access_token"], response["item_id"]
 
+    def delete_item(self, access_token):
+        """
+        Exchanges a public token for an access token.
+        Args:
+            access_token: Token created by plaid link
+        Returns:
+            removed
+        """
+        response = self._client.Item.remove(access_token)
+        return response["removed"]
+
     def get_transactions(
         self,
         access_token,
