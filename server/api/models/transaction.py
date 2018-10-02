@@ -30,22 +30,22 @@ class Transaction(models.Model):
     id = models.UUIDField(_("id"), primary_key=True, default=uuid.uuid4, editable=False)
     amount = models.DecimalField(_("amount"), max_digits=10, decimal_places=2)
     category_hierarchy = (
-        _("category_hierarchy"),
+        _("category hierarchy"),
         ArrayField(models.CharField(max_length=25, blank=True), size=8),
     )
     date = models.DateField(_("date"))
     name = models.CharField(_("name"), max_length=100)
     note = models.CharField(_("note"), max_length=140)
     pending = models.BooleanField(_("date"), default=True)
-    transaction_id = models.CharField(_("transaction_id"), max_length=50)
+    transaction_id = models.CharField(_("transaction id"), max_length=50)
     transaction_type = models.CharField(
-        _("transaction_type"), max_length=2, choices=TRANSACTION_TYPES, default=DIGITAL
+        _("transaction type"), max_length=2, choices=TRANSACTION_TYPES, default=DIGITAL
     )
     iso_currency_code = models.CharField(
-        _("iso_currency_code"), blank=True, max_length=3
+        _("iso currency code"), blank=True, max_length=3
     )
     unofficial_currency_code = models.CharField(
-        _("unofficial_currency_code"), blank=True, max_length=10
+        _("unofficial currency code"), blank=True, max_length=10
     )
     account = models.ForeignKey(
         Account,

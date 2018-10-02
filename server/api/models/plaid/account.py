@@ -16,7 +16,7 @@ class Account(models.Model):
     """
 
     id = models.UUIDField(_("id"), primary_key=True, default=uuid.uuid4, editable=False)
-    account_id = models.CharField(_("account_id"), max_length=50)
+    account_id = models.CharField(_("account id"), max_length=50)
     mask = models.CharField(_("mask"), max_length=4)
     name = models.CharField(_("name"), max_length=100)
     subtype = models.CharField(_("subtype"), max_length=50)
@@ -33,7 +33,7 @@ class Account(models.Model):
     item = models.ForeignKey(
         Item, on_delete=models.CASCADE, related_name="accounts", verbose_name=_("item")
     )
-    date_created = models.DateTimeField(_("date_created"), default=timezone.now)
+    date_created = models.DateTimeField(_("date created"), default=timezone.now)
 
     class Meta:
         db_table = "api_plaid_account"

@@ -14,7 +14,7 @@ class BudgetCategory(models.Model):
     id = models.UUIDField(_("id"), primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(_("name"), max_length=25)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    date_created = models.DateTimeField(_("date_created"), default=timezone.now)
+    date_created = models.DateTimeField(_("date created"), default=timezone.now)
 
     class Meta:
         ordering = ["name"]

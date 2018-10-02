@@ -10,7 +10,7 @@ class Category(models.Model):
     """
 
     id = models.UUIDField(_("id"), primary_key=True, default=uuid.uuid4, editable=False)
-    category_id = models.CharField(_("category_id"), max_length=50)
+    category_id = models.CharField(_("category id"), max_length=50)
     group = models.CharField(_("group"), max_length=50)
     hierarchy = (
         _("hierarchy"),

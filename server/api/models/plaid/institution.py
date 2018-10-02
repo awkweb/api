@@ -10,9 +10,9 @@ class Institution(models.Model):
     """
 
     id = models.UUIDField(_("id"), primary_key=True, default=uuid.uuid4, editable=False)
-    institution_id = models.CharField(_("institution_id"), max_length=50)
+    institution_id = models.CharField(_("institution id"), max_length=50)
     name = models.CharField(_("name"), max_length=100)
-    date_created = models.DateTimeField(_("date_created"), default=timezone.now)
+    date_created = models.DateTimeField(_("date created"), default=timezone.now)
 
     class Meta:
         db_table = "api_plaid_institution"

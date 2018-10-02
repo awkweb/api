@@ -26,7 +26,7 @@ class Budget(models.Model):
         related_name="budgets",
         verbose_name=_("budget category"),
     )
-    date_created = models.DateTimeField(_("date_created"), default=timezone.now)
+    date_created = models.DateTimeField(_("date created"), default=timezone.now)
 
     class Meta:
 

@@ -9,9 +9,9 @@ class TransactionPaymentMeta(models.Model):
     """
 
     id = models.UUIDField(_("id"), primary_key=True, default=uuid.uuid4, editable=False)
-    reference_number = models.CharField(_("reference_number"), max_length=50)
-    ppd_id = models.CharField(_("ppd_id"), max_length=50)
-    payee_name = models.CharField(_("payee_name"), max_length=50)
+    reference_number = models.CharField(_("reference number"), max_length=50)
+    ppd_id = models.CharField(_("PPD id"), max_length=50)
+    payee_name = models.CharField(_("payee name"), max_length=50)
 
     class Meta:
         db_table = "api_transaction_payment_meta"
