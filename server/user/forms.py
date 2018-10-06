@@ -74,7 +74,7 @@ class AuthenticationForm(forms.Form):
         allow login by active users, and reject login by inactive users.
 
         If the given user cannot log in, this method should raise a
-        ``forms.ValidationError``.
+        ``components.ValidationError``.
 
         If the given user may log in, this method should return None.
         """

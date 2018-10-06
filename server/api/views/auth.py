@@ -82,7 +82,13 @@ class LoginView(GenericAPIView):
 
     def get_response_data(self, user):
         token, created = Token.objects.get_or_create(user=user)
-        return {"id": user.pk, "email": user.email, "token": token.key}
+        return {
+            "email": user.email,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "id": user.pk,
+            "token": token.key,
+        }
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
