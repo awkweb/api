@@ -10,6 +10,7 @@ router.register(r"users", views.UserViewSet, base_name="users")
 urlpatterns = [
     url(r"^", include(router.urls)),
     url(r"^auth/link/plaid/", views.LinkPlaidView.as_view()),
+    url(r"^auth/password/change/", views.ChangePasswordView.as_view()),
     url(r"^auth/login/", views.LoginView.as_view()),
     url(r"^auth/logout/", views.LogoutView.as_view()),
     url(r"^auth/register/", views.RegisterView.as_view()),

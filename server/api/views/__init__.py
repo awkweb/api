@@ -1,3 +1,3 @@
-from .auth import LinkPlaidView, LoginView, LogoutView, RegisterView
+from .auth import ChangePasswordView, LinkPlaidView, LoginView, LogoutView, RegisterView
 from .item import ItemViewSet
 from .user import UserViewSet
