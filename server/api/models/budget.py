@@ -29,8 +29,21 @@ class Budget(models.Model):
     date_created = models.DateTimeField(_("date created"), default=timezone.now)
 
     class Meta:
-
         verbose_name_plural = "budgets"
 
     def __str__(self):
         return self.name.title()
+
+    @staticmethod
+    def has_read_permission(request):
+        return True
+
+    def has_object_read_permission(self, request):
+        return request.user == self.user
+
+    @staticmethod
+    def has_write_permission(self):
+        return True
+
+    def has_object_write_permission(self, request):
+        return request.user == self.user

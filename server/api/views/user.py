@@ -7,11 +7,12 @@ from ..serializers import UserSerializer
 
 class UserViewSet(CreateDestroyRetrieveUpdateViewSet):
     """
-    API endpoint that allows Users to be created, viewed, or edited.
+    API endpoint that allows Users to be created, deleted, viewed, or edited.
     """
 
     permission_classes = (IsAuthenticated, DRYPermissions)
     serializer_class = UserSerializer
 
     def get_queryset(self):
-        return get_user_model().objects.filter(pk=self.request.auth.user.id)
+        user_id = self.request.auth.user.id
+        return get_user_model().objects.filter(pk=user_id)
