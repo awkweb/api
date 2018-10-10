@@ -4,7 +4,16 @@ from .auth import (
     LoginSerializer,
     RegisterSerializer,
 )
-from .plaid import AccountSerializer, InstitutionSerializer, ItemSerializer
+from .plaid import (
+    AccountSerializer,
+    CategorySerializer,
+    BalanceSerializer,
+    InstitutionSerializer,
+    ItemSerializer,
+    TransactionLocationSerializer,
+    TransactionPaymentMetaSerializer,
+)
 from .budget import BudgetSerializer
 from .budget_category import BudgetCategorySerializer
+from .transaction import TransactionSerializer
 from .user import UserSerializer

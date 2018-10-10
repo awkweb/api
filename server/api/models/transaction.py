@@ -3,10 +3,8 @@ from django.conf import settings
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.utils.translation import ugettext_lazy as _
-from .plaid import Account, Category
+from .plaid import Account, Category, TransactionLocation, TransactionPaymentMeta
 from .budget import Budget
-from .transaction_location import TransactionLocation
-from .transaction_payment_meta import TransactionPaymentMeta
 
 DIGITAL = "DI"
 PLACE = "PL"
@@ -37,7 +35,7 @@ class Transaction(models.Model):
     name = models.CharField(_("name"), max_length=100)
     note = models.CharField(_("note"), max_length=140)
     pending = models.BooleanField(_("date"), default=True)
-    transaction_id = models.CharField(_("transaction id"), max_length=50)
+    transaction_id = models.CharField(_("transaction id"), blank=True, max_length=50)
     transaction_type = models.CharField(
         _("transaction type"), max_length=2, choices=TRANSACTION_TYPES, default=DIGITAL
     )
