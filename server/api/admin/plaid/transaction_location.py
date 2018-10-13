@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from ..models import TransactionLocation
+from ...models import TransactionLocation
 
 
 @admin.register(TransactionLocation)

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from ..models import TransactionPaymentMeta
+from ...models import TransactionPaymentMeta
 
 
 @admin.register(TransactionPaymentMeta)

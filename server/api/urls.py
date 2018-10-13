@@ -5,9 +5,7 @@ from ..api import views
 
 router = routers.DefaultRouter()
 router.register(r"budgets", views.BudgetViewSet, base_name="budgets")
-router.register(
-    r"budget_categories", views.BudgetCategoryViewSet, base_name="budget_categories"
-)
+router.register(r"transactions", views.TransactionViewSet, base_name="transactions")
 router.register(r"items", views.ItemViewSet, base_name="items")
 router.register(r"users", views.UserViewSet, base_name="users")
 

@@ -7,6 +7,5 @@ from .plaid import (
     TransactionLocation,
     TransactionPaymentMeta,
 )
-from .budget_category import BudgetCategory
 from .budget import Budget
 from .transaction import Transaction

@@ -5,11 +5,9 @@ from rest_framework.serializers import (
 )
 from django.db.models import Sum
 from ..models import Budget, Transaction
-from .budget_category import BudgetCategorySerializer
 
 
 class BudgetSerializer(ModelSerializer):
-    budget_category = BudgetCategorySerializer(required=False)
     user = PrimaryKeyRelatedField(
         queryset=CurrentUserDefault(), write_only=True, default=CurrentUserDefault()
     )
@@ -21,14 +19,14 @@ class BudgetSerializer(ModelSerializer):
         return {
             "id": obj.id,
             "activity": activity,
-            "budget_category": obj.budget_category,
             "budgeted": obj.amount,
             "date_created": obj.date_created,
             "name": obj.name,
+            "order": obj.order,
             "remaining": obj.amount - activity,
             "transaction_count": transaction_count,
         }
 
     class Meta:
         model = Budget
-        fields = ("id", "amount", "name", "budget_category", "user", "date_created")
+        fields = ("id", "amount", "name", "order", "user", "date_created")

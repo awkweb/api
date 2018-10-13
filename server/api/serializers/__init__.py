@@ -14,6 +14,5 @@ from .plaid import (
     TransactionPaymentMetaSerializer,
 )
 from .budget import BudgetSerializer
-from .budget_category import BudgetCategorySerializer
 from .transaction import TransactionSerializer
 from .user import UserSerializer

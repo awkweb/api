@@ -4,9 +4,8 @@ from .plaid import (
     CategoryAdmin,
     InstitutionAdmin,
     ItemAdmin,
+    TransactionLocationAdmin,
+    TransactionPaymentMetaAdmin,
 )
 from .budget import BudgetAdmin
-from .budget_category import BudgetCategoryAdmin
 from .transaction import TransactionAdmin
-from .transaction_location import TransactionLocationAdmin
-from .transaction_payment_meta import TransactionPaymentMetaAdmin
