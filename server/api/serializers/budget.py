@@ -1,9 +1,11 @@
+from django.utils import timezone
 from rest_framework.serializers import (
     CurrentUserDefault,
     ModelSerializer,
     PrimaryKeyRelatedField,
 )
 from django.db.models import Sum
+from ..lib import get_month_end_date, get_month_start_date
 from ..models import Budget, Transaction
 
 
@@ -13,7 +15,13 @@ class BudgetSerializer(ModelSerializer):
     )
 
     def to_representation(self, obj):
-        transactions = Transaction.objects.filter(budget=obj)
+        request = self.context.get("request")
+        now = timezone.now()
+        start_date = request.query_params.get("start_date", get_month_start_date(now))
+        end_date = request.query_params.get("end_date", get_month_end_date(now))
+        transactions = Transaction.objects.filter(
+            budget=obj, date__range=[start_date, end_date], date_deleted=None
+        )
         activity = transactions.aggregate(Sum("amount")).get("amount__sum") or 0
         transaction_count = transactions.count()
         return {

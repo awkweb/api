@@ -4,8 +4,9 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from ..serializers import TransactionSerializer
+from ..filters import TransactionFilter
 from ..models import Transaction
+from ..serializers import TransactionSerializer
 
 
 class TransactionViewSet(ModelViewSet):
@@ -15,10 +16,11 @@ class TransactionViewSet(ModelViewSet):
 
     permission_classes = (IsAuthenticated, DRYPermissions)
     serializer_class = TransactionSerializer
+    filterset_class = TransactionFilter
 
     def get_queryset(self):
         user = self.request.auth.user
-        return Transaction.objects.filter(user=user)
+        return Transaction.objects.filter(user=user, date_deleted=None)
 
     def destroy(self, request, *args, **kwargs):
         transaction = self.get_object()
