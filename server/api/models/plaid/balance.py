@@ -15,10 +15,10 @@ class Balance(models.Model):
     current = models.DecimalField(_("current"), max_digits=10, decimal_places=2)
     limit = models.DecimalField(_("limit"), max_digits=10, decimal_places=2)
     iso_currency_code = models.CharField(
-        _("iso_currency_code"), blank=True, max_length=3
+        _("iso currency code"), blank=True, max_length=3
     )
     unofficial_currency_code = models.CharField(
-        _("unofficial_currency_code"), blank=True, max_length=10
+        _("unofficial currency code"), blank=True, max_length=10
     )
     account = models.ForeignKey(
         Account,
@@ -26,7 +26,7 @@ class Balance(models.Model):
         related_name="balances",
         verbose_name=_("account"),
     )
-    date_created = models.DateTimeField(_("date_created"), default=timezone.now)
+    date_created = models.DateTimeField(_("date created"), default=timezone.now)
 
     class Meta:
         db_table = "api_plaid_balance"

@@ -12,12 +12,48 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from ..lib import PlaidClient
 from ..models import Account, Institution, Item
-from ..serializers import LinkPlaidSerializer, LoginSerializer, RegisterSerializer
+from ..serializers import (
+    ChangePasswordSerializer,
+    LinkPlaidSerializer,
+    LoginSerializer,
+    RegisterSerializer,
+)
 
 plaid = PlaidClient()
 sensitive_post_parameters_m = method_decorator(
-    sensitive_post_parameters("password", "password_confirm", "public_token")
+    sensitive_post_parameters(
+        "password", "password_confirm", "password_verify", "public_token"
+    )
 )
+
+
+class ChangePasswordView(GenericAPIView):
+    """
+    API endpoint that allows an user to login
+    """
+
+    permission_classes = (AllowAny,)
+    serializer_class = ChangePasswordSerializer
+
+    @sensitive_post_parameters_m
+    def dispatch(self, *args, **kwargs):
+        return super(ChangePasswordView, self).dispatch(*args, **kwargs)
+
+    def patch(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        password_verify = serializer.validated_data["password_verify"]
+        user = request.auth.user
+        if not user.check_password(password_verify):
+            return Response(
+                {"password_verify": ["Incorrect password"]},
+                status=status.HTTP_400_BAD_REQUEST,
+                headers={},
+            )
+        password = serializer.validated_data["password"]
+        user.set_password(password)
+        user.save()
+        return Response("Password changed", status=status.HTTP_200_OK, headers={})
 
 
 class LinkPlaidView(GenericAPIView):
@@ -82,7 +118,13 @@ class LoginView(GenericAPIView):
 
     def get_response_data(self, user):
         token, created = Token.objects.get_or_create(user=user)
-        return {"id": user.pk, "email": user.email, "token": token.key}
+        return {
+            "email": user.email,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "id": user.pk,
+            "token": token.key,
+        }
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

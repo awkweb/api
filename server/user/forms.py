@@ -1,10 +1,6 @@
 import django
 from django import forms
-from django.contrib.auth import (
-    authenticate,
-    get_user_model,
-    password_validation
-)
+from django.contrib.auth import authenticate, get_user_model, password_validation
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.utils.translation import ugettext_lazy as _
 
@@ -17,23 +13,22 @@ class AuthenticationForm(forms.Form):
     Base class for authenticating users. Extend this to get a form that accepts
     email/password logins.
     """
+
     email = forms.EmailField(
         label=_("Email address"),
         max_length=254,
-        widget=forms.EmailInput(attrs={'autofocus': True}),
+        widget=forms.EmailInput(attrs={"autofocus": True}),
     )
     password = forms.CharField(
-        label=_("Password"),
-        strip=False,
-        widget=forms.PasswordInput,
+        label=_("Password"), strip=False, widget=forms.PasswordInput
     )
 
     error_messages = {
-        'invalid_login': _(
+        "invalid_login": _(
             "Please enter a correct %(username)s and password. Note that both "
             "fields may be case-sensitive."
         ),
-        'inactive': _("This account is inactive."),
+        "inactive": _("This account is inactive."),
     }
 
     def __init__(self, request=None, *args, **kwargs):
@@ -48,17 +43,17 @@ class AuthenticationForm(forms.Form):
         self.username_field = UserModel._meta.get_field(UserModel.USERNAME_FIELD)
 
     def clean(self):
-        email = self.cleaned_data.get('email')
-        password = self.cleaned_data.get('password')
+        email = self.cleaned_data.get("email")
+        password = self.cleaned_data.get("password")
 
         if email and password:
             self.user_cache = authenticate(self.request, email=email, password=password)
             if self.user_cache is None:
                 if django.VERSION < (2, 1):
                     raise forms.ValidationError(
-                        self.error_messages['invalid_login'],
-                        code='invalid_login',
-                        params={'username': self.username_field.verbose_name},
+                        self.error_messages["invalid_login"],
+                        code="invalid_login",
+                        params={"username": self.username_field.verbose_name},
                     )
 
                 raise self.get_invalid_login_error()
@@ -74,17 +69,17 @@ class AuthenticationForm(forms.Form):
         allow login by active users, and reject login by inactive users.
 
         If the given user cannot log in, this method should raise a
-        ``forms.ValidationError``.
+        ``components.ValidationError``.
 
         If the given user may log in, this method should return None.
         """
         if not user.is_active:
             raise forms.ValidationError(
-                self.error_messages['inactive'],
-                code='inactive',
+                self.error_messages["inactive"], code="inactive"
             )
 
     if django.VERSION < (2, 1):
+
         def get_user_id(self):
             if self.user_cache:
                 return self.user_cache.id
@@ -94,11 +89,12 @@ class AuthenticationForm(forms.Form):
         return self.user_cache
 
     if django.VERSION >= (2, 1):
+
         def get_invalid_login_error(self):
             return forms.ValidationError(
-                self.error_messages['invalid_login'],
-                code='invalid_login',
-                params={'username': self.username_field.verbose_name},
+                self.error_messages["invalid_login"],
+                code="invalid_login",
+                params={"username": self.username_field.verbose_name},
             )
 
 
@@ -107,13 +103,12 @@ class UserCreationForm(forms.ModelForm):
     A form that creates a user, with no privileges, from the given email and
     password.
     """
-    error_messages = {
-        'password_mismatch': _("The two password fields didn't match."),
-    }
+
+    error_messages = {"password_mismatch": _("The two password fields didn't match.")}
     email = forms.EmailField(
         label=_("Email address"),
         max_length=254,
-        widget=forms.EmailInput(attrs={'autofocus': True}),
+        widget=forms.EmailInput(attrs={"autofocus": True}),
     )
     password1 = forms.CharField(
         label=_("Password"),
@@ -137,8 +132,7 @@ class UserCreationForm(forms.ModelForm):
         password2 = self.cleaned_data.get("password2")
         if password1 and password2 and password1 != password2:
             raise forms.ValidationError(
-                self.error_messages['password_mismatch'],
-                code='password_mismatch',
+                self.error_messages["password_mismatch"], code="password_mismatch"
             )
         return password2
 
@@ -146,12 +140,12 @@ class UserCreationForm(forms.ModelForm):
         super()._post_clean()
         # Validate the password after self.instance is updated with form data
         # by super().
-        password = self.cleaned_data.get('password2')
+        password = self.cleaned_data.get("password2")
         if password:
             try:
                 password_validation.validate_password(password, self.instance)
             except forms.ValidationError as error:
-                self.add_error('password2', error)
+                self.add_error("password2", error)
 
     def save(self, commit=True):
         user = super().save(commit=False)
@@ -163,38 +157,40 @@ class UserCreationForm(forms.ModelForm):
 
 class UserChangeForm(forms.ModelForm):
     email = forms.EmailField(
-        label=_("Email address"),
-        max_length=254,
-        widget=forms.EmailInput(),
+        label=_("Email address"), max_length=254, widget=forms.EmailInput()
     )
     password = ReadOnlyPasswordHashField(
         label=_("Password"),
         help_text=_(
             "Raw passwords are not stored, so there is no way to see this "
             "user's password, but you can change the password using "
-            "<a href=\"{}\">this form</a>."
+            '<a href="{}">this form</a>.'
         ),
     )
 
     class Meta:
         model = UserModel
-        fields = '__all__'
+        fields = "__all__"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         if django.VERSION < (2, 1):
-            self.fields['password'].help_text = self.fields['password'].help_text.format('../password/')
-            f = self.fields.get('user_permissions')
+            self.fields["password"].help_text = self.fields[
+                "password"
+            ].help_text.format("../password/")
+            f = self.fields.get("user_permissions")
             if f is not None:
-                f.queryset = f.queryset.select_related('content_type')
+                f.queryset = f.queryset.select_related("content_type")
         else:
-            password = self.fields.get('password')
+            password = self.fields.get("password")
             if password:
-                password.help_text = password.help_text.format('../password/')
-            user_permissions = self.fields.get('user_permissions')
+                password.help_text = password.help_text.format("../password/")
+            user_permissions = self.fields.get("user_permissions")
             if user_permissions:
-                user_permissions.queryset = user_permissions.queryset.select_related('content_type')
+                user_permissions.queryset = user_permissions.queryset.select_related(
+                    "content_type"
+                )
 
     def clean_password(self):
         # Regardless of what the user provides, return the initial value.

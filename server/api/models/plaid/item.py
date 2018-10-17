@@ -14,15 +14,15 @@ class Item(models.Model):
     """
 
     id = models.UUIDField(_("id"), primary_key=True, default=uuid.uuid4, editable=False)
-    access_token = models.CharField(_("access_token"), max_length=100)
-    item_id = models.CharField(_("item_id"), max_length=100)
+    access_token = models.CharField(_("access token"), max_length=100)
+    item_id = models.CharField(_("item id"), max_length=100)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_("user")
     )
     institution = models.ForeignKey(
         Institution, on_delete=models.CASCADE, verbose_name=_("institution")
     )
-    date_created = models.DateTimeField(_("date_created"), default=timezone.now)
+    date_created = models.DateTimeField(_("date created"), default=timezone.now)
 
     class Meta:
         db_table = "api_plaid_item"
