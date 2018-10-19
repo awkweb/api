@@ -1,6 +1,6 @@
 from django.utils import timezone
 from dry_rest_permissions.generics import DRYPermissions
-from rest_framework import status
+from rest_framework.status import HTTP_204_NO_CONTENT
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
@@ -27,4 +27,4 @@ class TransactionViewSet(ModelViewSet):
         if not transaction.deleted:
             transaction.date_deleted = timezone.now()
             transaction.save()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=HTTP_204_NO_CONTENT)

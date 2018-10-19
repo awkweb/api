@@ -1,10 +1,10 @@
 from Crypto.Cipher import AES
 from django.conf import settings
-from django.db import transaction
+from django.db.transaction import atomic
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.debug import sensitive_post_parameters
-from rest_framework import status
+from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 from rest_framework.authtoken.models import Token
 from rest_framework.generics import CreateAPIView, GenericAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -47,13 +47,13 @@ class ChangePasswordView(GenericAPIView):
         if not user.check_password(password_verify):
             return Response(
                 {"password_verify": ["Incorrect password"]},
-                status=status.HTTP_400_BAD_REQUEST,
+                status=HTTP_400_BAD_REQUEST,
                 headers={},
             )
         password = serializer.validated_data["password"]
         user.set_password(password)
         user.save()
-        return Response("Password changed", status=status.HTTP_200_OK, headers={})
+        return Response("Password changed", status=HTTP_200_OK, headers={})
 
 
 class LinkPlaidView(GenericAPIView):
@@ -68,7 +68,7 @@ class LinkPlaidView(GenericAPIView):
     def dispatch(self, *args, **kwargs):
         return super(LinkPlaidView, self).dispatch(*args, **kwargs)
 
-    @transaction.atomic
+    @atomic
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -101,7 +101,7 @@ class LinkPlaidView(GenericAPIView):
                 institution=institution,
                 item=item,
             )
-        return Response({}, status=status.HTTP_200_OK, headers={})
+        return Response({}, status=HTTP_200_OK, headers={})
 
 
 class LoginView(GenericAPIView):
@@ -130,9 +130,7 @@ class LoginView(GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data["user"]
-        return Response(
-            self.get_response_data(user), status=status.HTTP_200_OK, headers={}
-        )
+        return Response(self.get_response_data(user), status=HTTP_200_OK, headers={})
 
 
 class LogoutView(APIView):
@@ -147,9 +145,7 @@ class LogoutView(APIView):
         return self.finalize_response(request, response, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        return Response(
-            {"detail": _("Successfully logged out.")}, status=status.HTTP_200_OK
-        )
+        return Response({"detail": _("Successfully logged out.")}, status=HTTP_200_OK)
 
 
 class RegisterView(CreateAPIView):
@@ -174,7 +170,5 @@ class RegisterView(CreateAPIView):
         user = serializer.save()
         headers = self.get_success_headers(serializer.data)
         return Response(
-            self.get_response_data(user),
-            status=status.HTTP_201_CREATED,
-            headers=headers,
+            self.get_response_data(user), status=HTTP_201_CREATED, headers=headers
         )

@@ -4,7 +4,7 @@ from ..plaid import AccountSerializer, InstitutionSerializer
 
 class LinkPlaidSerializer(serializers.Serializer):
     accounts = AccountSerializer(
-        many=True, fields=("account_id", "mask", "name", "subtype", "type")
+        fields=("account_id", "mask", "name", "subtype", "type"), many=True
     )
     institution = InstitutionSerializer()
     token = serializers.CharField()

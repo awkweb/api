@@ -1,15 +1,11 @@
 from django.utils import timezone
-from rest_framework.serializers import (
-    CurrentUserDefault,
-    ModelSerializer,
-    PrimaryKeyRelatedField,
-)
+from rest_framework.serializers import CurrentUserDefault, PrimaryKeyRelatedField
 from django.db.models import Sum
-from ..lib import get_month_end_date, get_month_start_date
+from ..lib import DynamicFieldsModelSerializer, get_month_end_date, get_month_start_date
 from ..models import Budget, Transaction
 
 
-class BudgetSerializer(ModelSerializer):
+class BudgetSerializer(DynamicFieldsModelSerializer):
     user = PrimaryKeyRelatedField(
         queryset=CurrentUserDefault(), write_only=True, default=CurrentUserDefault()
     )
