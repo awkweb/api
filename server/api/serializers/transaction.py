@@ -1,7 +1,5 @@
 from rest_framework.serializers import (
-    CharField,
     CurrentUserDefault,
-    DateField,
     ModelSerializer,
     PrimaryKeyRelatedField,
 )
@@ -25,10 +23,8 @@ class BudgetPrimaryKeyRelatedField(PrimaryKeyRelatedField):
 
 
 class TransactionSerializer(ModelSerializer):
-    date = DateField(required=False)
-    note = CharField(required=False)
     account = AccountSerializer(required=False)
-    budget = BudgetPrimaryKeyRelatedField(queryset=Budget.objects, write_only=True)
+    budget = BudgetPrimaryKeyRelatedField(queryset=Budget.objects, required=False)
     category = CategorySerializer(required=False)
     transaction_location = TransactionLocationSerializer(required=False)
     transaction_payment_meta = TransactionPaymentMetaSerializer(required=False)
