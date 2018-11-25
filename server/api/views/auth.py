@@ -1,5 +1,3 @@
-from Crypto.Cipher import AES
-from django.conf import settings
 from django.db.transaction import atomic
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
@@ -81,9 +79,9 @@ class LinkPlaidView(GenericAPIView):
         user = request.auth.user
         public_token = serializer.validated_data["token"]
         access_token, item_id = plaid.get_access_token(public_token)
-        crypto = AES.new(settings.SECRET_KEY, AES.MODE_CFB)
+
         item = Item.objects.create(
-            access_token=crypto.encrypt(access_token),
+            access_token=access_token,
             item_id=item_id,
             user=user,
             institution=institution,

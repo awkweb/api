@@ -10,6 +10,12 @@ class BudgetSerializer(DynamicFieldsModelSerializer):
         queryset=CurrentUserDefault(), write_only=True, default=CurrentUserDefault()
     )
 
+    class Meta:
+        model = Budget
+        fields = ("id", "amount_cents", "name", "order", "user", "date_created")
+
+
+class BudgetDashboardSerializer(DynamicFieldsModelSerializer):
     def to_representation(self, obj):
         request = self.context.get("request")
         now = timezone.now()
@@ -18,19 +24,20 @@ class BudgetSerializer(DynamicFieldsModelSerializer):
         transactions = Transaction.objects.filter(
             budget=obj, date__range=[start_date, end_date], date_deleted=None
         )
-        activity = transactions.aggregate(Sum("amount")).get("amount__sum") or 0
+        activity = (
+            transactions.aggregate(Sum("amount_cents")).get("amount_cents__sum") or 0
+        )
         transaction_count = transactions.count()
         return {
             "id": obj.id,
             "activity": activity,
-            "budgeted": obj.amount,
+            "budgeted": obj.amount_cents,
             "date_created": obj.date_created,
             "name": obj.name,
             "order": obj.order,
-            "remaining": obj.amount - activity,
+            "remaining": obj.amount_cents - activity,
             "transaction_count": transaction_count,
         }
 
     class Meta:
         model = Budget
-        fields = ("id", "amount", "name", "order", "user", "date_created")

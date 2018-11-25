@@ -4,12 +4,7 @@ from rest_framework.serializers import (
     PrimaryKeyRelatedField,
 )
 from ..models import Budget, Transaction
-from .plaid import (
-    AccountSerializer,
-    CategorySerializer,
-    TransactionLocationSerializer,
-    TransactionPaymentMetaSerializer,
-)
+from .plaid import AccountSerializer, TransactionLocationSerializer
 
 
 class BudgetPrimaryKeyRelatedField(PrimaryKeyRelatedField):
@@ -23,11 +18,11 @@ class BudgetPrimaryKeyRelatedField(PrimaryKeyRelatedField):
 
 
 class TransactionSerializer(ModelSerializer):
-    account = AccountSerializer(required=False)
+    account = AccountSerializer(allow_null=True, required=False)
     budget = BudgetPrimaryKeyRelatedField(queryset=Budget.objects, required=False)
-    category = CategorySerializer(required=False)
-    transaction_location = TransactionLocationSerializer(required=False)
-    transaction_payment_meta = TransactionPaymentMetaSerializer(required=False)
+    transaction_location = TransactionLocationSerializer(
+        allow_null=True, required=False
+    )
     user = PrimaryKeyRelatedField(
         queryset=CurrentUserDefault(), write_only=True, default=CurrentUserDefault()
     )
@@ -36,14 +31,13 @@ class TransactionSerializer(ModelSerializer):
         model = Transaction
         fields = (
             "id",
-            "amount",
+            "amount_cents",
+            "currency",
             "date",
             "name",
             "note",
             "account",
             "budget",
-            "category",
             "transaction_location",
-            "transaction_payment_meta",
             "user",
         )

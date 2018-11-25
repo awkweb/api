@@ -8,11 +8,11 @@ from ..models import Transaction
 
 
 class TransactionFilter(FilterSet):
-    amount = RangeFilter(field_name="amount")
+    amount_cents = RangeFilter(field_name="amount_cents")
     account = UUIDFilter(field_name="account")
     budget = UUIDFilter(field_name="budget")
     date = DateFromToRangeFilter(field_name="date")
 
     class Meta:
         model = Transaction
-        fields = ["account", "amount", "budget", "date"]
+        fields = ["account", "amount_cents", "budget", "date"]

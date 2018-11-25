@@ -37,7 +37,7 @@ class PlaidClient:
 
     def delete_item(self, access_token):
         """
-        Exchanges a public token for an access token.
+        Deletes an item associated with an access token.
         Args:
             access_token: Token created by plaid link
         Returns:

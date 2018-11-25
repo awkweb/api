@@ -6,7 +6,7 @@ from ..models import Transaction
 
 @admin.register(Transaction)
 class TransactionAdmin(admin.ModelAdmin):
-    list_display = ("id", "amount", "name", "transaction_id", "user", "date")
+    list_display = ("id", "amount_cents", "name", "origin", "user", "date")
     ordering = ["-date"]
 
     def created(self, obj):

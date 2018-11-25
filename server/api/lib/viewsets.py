@@ -20,11 +20,14 @@ class CreateDestroyRetrieveUpdateViewSet(
     pass
 
 
-class DestroyListViewSet(
-    mixins.DestroyModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet
+class DestroyListUpdateViewSet(
+    mixins.DestroyModelMixin,
+    mixins.ListModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
 ):
     """
-    A viewset that provides `destroy` and `list` actions.
+    A viewset that provides `destroy`, `list`, and update actions.
 
     To use it, override the class and set the `.queryset` and
     `.serializer_class` attributes.

@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
 from rest_framework.viewsets import ModelViewSet
 from ..models import Budget
-from ..serializers import BudgetSerializer
+from ..serializers import BudgetSerializer, BudgetDashboardSerializer
 
 
 class BudgetViewSet(ModelViewSet):
@@ -20,6 +20,15 @@ class BudgetViewSet(ModelViewSet):
     def get_queryset(self):
         user = self.request.auth.user
         return Budget.objects.filter(user=user).order_by("order")
+
+    @action(detail=False, methods=["get"])
+    def dashboard(self, request):
+        user = request.auth.user
+        budgets = Budget.objects.filter(user=user).order_by("order")
+        serializer = BudgetDashboardSerializer(
+            budgets, context={"request": request}, many=True
+        )
+        return Response(serializer.data, status=HTTP_200_OK, headers={})
 
     @atomic
     @action(detail=False, methods=["post"])

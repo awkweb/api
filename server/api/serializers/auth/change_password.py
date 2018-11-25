@@ -1,12 +1,12 @@
 from django.contrib.auth.password_validation import validate_password
-from rest_framework import serializers
+from rest_framework.serializers import Serializer, CharField, ValidationError
 from django.utils.translation import gettext_lazy as _
 
 
-class ChangePasswordSerializer(serializers.Serializer):
-    password = serializers.CharField(write_only=True)
-    password_confirm = serializers.CharField(write_only=True)
-    password_verify = serializers.CharField(write_only=True)
+class ChangePasswordSerializer(Serializer):
+    password = CharField(write_only=True)
+    password_confirm = CharField(write_only=True)
+    password_verify = CharField(write_only=True)
 
     def validate_password(self, password):
         validate_password(password)
@@ -14,7 +14,5 @@ class ChangePasswordSerializer(serializers.Serializer):
 
     def validate(self, data):
         if data["password"] != data["password_confirm"]:
-            raise serializers.ValidationError(
-                _("The two password fields didn't match.")
-            )
+            raise ValidationError(_("The two password fields didn't match."))
         return data
