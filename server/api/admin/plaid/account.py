@@ -6,15 +6,7 @@ from ...models import Account
 
 @admin.register(Account)
 class AccountAdmin(admin.ModelAdmin):
-    list_display = (
-        "id",
-        "account_id",
-        "name",
-        "user",
-        "institution",
-        "item",
-        "date_created",
-    )
+    list_display = ("id", "account_id", "name", "user", "date_created")
     ordering = ["-date_created"]
 
     def created(self, obj):

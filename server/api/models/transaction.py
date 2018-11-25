@@ -4,8 +4,9 @@ from django.conf import settings
 from django.contrib.gis.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
-from .plaid import Account, TransactionLocation
+from .plaid import Account
 from .budget import Budget
+from .transaction_location import TransactionLocation
 
 PLAID = "PL"
 WILBUR = "WI"

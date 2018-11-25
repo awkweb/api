@@ -3,8 +3,18 @@ from rest_framework.serializers import (
     ModelSerializer,
     PrimaryKeyRelatedField,
 )
-from ..models import Budget, Transaction
-from .plaid import AccountSerializer, TransactionLocationSerializer
+from ..models import Account, Budget, Transaction
+from .transaction_location import TransactionLocationSerializer
+
+
+class AccountPrimaryKeyRelatedField(PrimaryKeyRelatedField):
+    def get_queryset(self):
+        request = self.context.get("request", None)
+        queryset = super(AccountPrimaryKeyRelatedField, self).get_queryset()
+        if not request or not queryset:
+            return None
+        account_id = request.data["account"]
+        return queryset.filter(id=account_id)
 
 
 class BudgetPrimaryKeyRelatedField(PrimaryKeyRelatedField):
@@ -18,7 +28,9 @@ class BudgetPrimaryKeyRelatedField(PrimaryKeyRelatedField):
 
 
 class TransactionSerializer(ModelSerializer):
-    account = AccountSerializer(allow_null=True, required=False)
+    account = AccountPrimaryKeyRelatedField(
+        allow_null=True, queryset=Account.objects, required=False
+    )
     budget = BudgetPrimaryKeyRelatedField(queryset=Budget.objects, required=False)
     transaction_location = TransactionLocationSerializer(
         allow_null=True, required=False
@@ -36,6 +48,8 @@ class TransactionSerializer(ModelSerializer):
             "date",
             "name",
             "note",
+            "origin",
+            "origin_id",
             "account",
             "budget",
             "transaction_location",

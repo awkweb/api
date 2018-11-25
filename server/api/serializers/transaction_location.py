@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer
-from ...models import TransactionLocation
+from ..models import TransactionLocation
 
 
 class TransactionLocationSerializer(ModelSerializer):

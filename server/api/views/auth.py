@@ -1,27 +1,16 @@
-from django.db.transaction import atomic
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.debug import sensitive_post_parameters
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 from rest_framework.authtoken.models import Token
 from rest_framework.generics import CreateAPIView, GenericAPIView
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from ..lib import PlaidClient
-from ..models import Account, Institution, Item
-from ..serializers import (
-    ChangePasswordSerializer,
-    LinkPlaidSerializer,
-    LoginSerializer,
-    RegisterSerializer,
-)
+from ..serializers import ChangePasswordSerializer, LoginSerializer, RegisterSerializer
 
-plaid = PlaidClient()
 sensitive_post_parameters_m = method_decorator(
-    sensitive_post_parameters(
-        "password", "password_confirm", "password_verify", "public_token"
-    )
+    sensitive_post_parameters("password", "password_confirm", "password_verify")
 )
 
 
@@ -52,54 +41,6 @@ class ChangePasswordView(GenericAPIView):
         user.set_password(password)
         user.save()
         return Response("Password changed", status=HTTP_200_OK, headers={})
-
-
-class LinkPlaidView(GenericAPIView):
-    """
-    API endpoint that adds an account after using Plaid Link
-    """
-
-    permission_classes = (IsAuthenticated,)
-    serializer_class = LinkPlaidSerializer
-
-    @sensitive_post_parameters_m
-    def dispatch(self, *args, **kwargs):
-        return super(LinkPlaidView, self).dispatch(*args, **kwargs)
-
-    @atomic
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        institution_data = serializer.validated_data["institution"]
-        institution, _ = Institution.objects.get_or_create(
-            institution_id=institution_data.get("institution_id"),
-            name=institution_data.get("name"),
-        )
-
-        user = request.auth.user
-        public_token = serializer.validated_data["token"]
-        access_token, item_id = plaid.get_access_token(public_token)
-
-        item = Item.objects.create(
-            access_token=access_token,
-            item_id=item_id,
-            user=user,
-            institution=institution,
-        )
-
-        accounts = serializer.validated_data["accounts"]
-        for account in accounts:
-            Account.objects.create(
-                account_id=account.get("account_id"),
-                mask=account.get("mask"),
-                name=account.get("name"),
-                subtype=account.get("subtype"),
-                type=account.get("type"),
-                user=user,
-                institution=institution,
-                item=item,
-            )
-        return Response({}, status=HTTP_200_OK, headers={})
 
 
 class LoginView(GenericAPIView):

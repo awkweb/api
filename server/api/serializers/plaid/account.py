@@ -12,6 +12,5 @@ class AccountSerializer(DynamicFieldsModelSerializer):
             "subtype",
             "type",
             "user",
-            "institution",
             "date_created",
         )
