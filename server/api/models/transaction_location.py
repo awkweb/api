@@ -1,6 +1,7 @@
 import uuid
 from django.contrib.gis.db import models
 from django.utils.translation import ugettext_lazy as _
+from .transaction import Transaction
 
 
 class TransactionLocation(models.Model):
@@ -15,6 +16,14 @@ class TransactionLocation(models.Model):
     zip = models.CharField(_("zip"), max_length=10)
     lat = models.FloatField(_("latitude"))
     lon = models.FloatField(_("longitude"))
+    transaction = models.OneToOneField(
+        Transaction,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        related_name="transaction_location",
+        verbose_name=_("transaction"),
+    )
 
     class Meta:
         db_table = "api_transaction_location"

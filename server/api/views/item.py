@@ -12,15 +12,13 @@ from ..serializers import ItemSerializer
 
 plaid = PlaidClient()
 sensitive_post_parameters_m = method_decorator(
-    sensitive_post_parameters(
-        "password", "password_confirm", "password_verify", "public_token"
-    )
+    sensitive_post_parameters("public_token")
 )
 
 
 class ItemViewSet(ModelViewSet):
     """
-    API endpoint that allows Items to be deleted, listed, or updated.
+    API endpoint that allows Accounts to be deleted, listed, or updated.
     """
 
     permission_classes = (IsAuthenticated, DRYPermissions)
@@ -45,25 +43,25 @@ class ItemViewSet(ModelViewSet):
         )
 
         user = request.auth.user
-        account = serializer.validated_data["account"]
-        account = Account.objects.create(
-            account_id=account.get("account_id"),
-            mask=account.get("mask"),
-            name=account.get("name"),
-            subtype=account.get("subtype"),
-            type=account.get("type"),
-            user=user,
-        )
-
         public_token = serializer.validated_data["public_token"]
         access_token, item_id = plaid.get_access_token(public_token)
         item = Item.objects.create(
             access_token=access_token,
             item_id=item_id,
             public_token=public_token,
-            account=account,
             user=user,
             institution=institution,
+        )
+
+        account = serializer.validated_data["account"]
+        Account.objects.create(
+            account_id=account.get("account_id"),
+            mask=account.get("mask"),
+            name=account.get("name"),
+            subtype=account.get("subtype"),
+            type=account.get("type"),
+            user=user,
+            item=item,
         )
         return Response(ItemSerializer(item).data, status=HTTP_200_OK, headers={})
 

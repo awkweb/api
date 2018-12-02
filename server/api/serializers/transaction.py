@@ -1,4 +1,5 @@
 from rest_framework.serializers import (
+    BooleanField,
     CurrentUserDefault,
     ModelSerializer,
     PrimaryKeyRelatedField,
@@ -28,6 +29,7 @@ class BudgetPrimaryKeyRelatedField(PrimaryKeyRelatedField):
 
 
 class TransactionSerializer(ModelSerializer):
+    new = BooleanField(default=False, read_only=True)
     account = AccountPrimaryKeyRelatedField(
         allow_null=True, queryset=Account.objects, required=False
     )
@@ -54,4 +56,5 @@ class TransactionSerializer(ModelSerializer):
             "budget",
             "transaction_location",
             "user",
+            "new",
         )

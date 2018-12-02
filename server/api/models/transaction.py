@@ -6,7 +6,6 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from .plaid import Account
 from .budget import Budget
-from .transaction_location import TransactionLocation
 
 PLAID = "PL"
 WILBUR = "WI"
@@ -19,6 +18,7 @@ class Transaction(models.Model):
     A User has many Transactions but a Transaction has only one User.
     An Account has many Transactions but a Transaction has only one Account.
     A Budget has many Transactions but a Transaction has only one Budget.
+    A Transaction has only one TransactionLocation and a TransactionLocation has only one Transaction.
     """
 
     id = models.UUIDField(_("id"), primary_key=True, default=uuid.uuid4, editable=False)
@@ -46,14 +46,6 @@ class Transaction(models.Model):
         on_delete=models.SET_NULL,
         related_name="transactions",
         verbose_name=_("budget"),
-    )
-    transaction_location = models.OneToOneField(
-        TransactionLocation,
-        blank=True,
-        null=True,
-        on_delete=models.CASCADE,
-        related_name="transactions",
-        verbose_name=_("transaction location"),
     )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_("user")

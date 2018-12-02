@@ -3,12 +3,12 @@ from django.conf import settings
 from django.contrib.gis.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
-from .account import Account
 from .institution import Institution
 
 
 class Item(models.Model):
     """
+    A Item has only one Account and an Account has only one Item.
     A User has many Items but an Item has only one User.
     Institutions have many Items but an Item has only one Institution.
     """
@@ -28,11 +28,8 @@ class Item(models.Model):
         related_name="items",
         verbose_name=_("institution"),
     )
-    account = models.OneToOneField(
-        Account,
-        on_delete=models.CASCADE,
-        related_name="items",
-        verbose_name=_("account"),
+    date_last_fetched = models.DateTimeField(
+        _("date last fetched"), blank=True, null=True
     )
     date_created = models.DateTimeField(_("date created"), default=timezone.now)
 

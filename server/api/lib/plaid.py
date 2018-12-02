@@ -65,6 +65,6 @@ class PlaidClient:
         start_date = self.__format_date(start)
         end_date = self.__format_date(end)
         response = self._client.Transactions.get(
-            access_token, start_date=start_date, end_date=end_date
+            access_token, start_date=start_date, end_date=end_date, count=500
         )
         return response["transactions"]
