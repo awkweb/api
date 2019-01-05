@@ -12,7 +12,15 @@ class BudgetSerializer(DynamicFieldsModelSerializer):
 
     class Meta:
         model = Budget
-        fields = ("id", "amount_cents", "name", "order", "user", "date_created")
+        fields = (
+            "id",
+            "amount_cents",
+            "description",
+            "name",
+            "order",
+            "user",
+            "date_created",
+        )
 
 
 class BudgetDashboardSerializer(DynamicFieldsModelSerializer):
@@ -32,6 +40,7 @@ class BudgetDashboardSerializer(DynamicFieldsModelSerializer):
             "id": obj.id,
             "budgeted": obj.amount_cents,
             "date_created": obj.date_created,
+            "description": obj.description,
             "name": obj.name,
             "remaining": obj.amount_cents - spent,
             "spent": spent,

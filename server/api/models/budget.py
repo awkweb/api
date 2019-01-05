@@ -12,6 +12,7 @@ class Budget(models.Model):
 
     id = models.UUIDField(_("id"), primary_key=True, default=uuid.uuid4, editable=False)
     amount_cents = models.IntegerField(_("amount_cents"))
+    description = models.CharField(_("description"), blank=True, max_length=280)
     name = models.CharField(_("name"), max_length=25)
     order = models.IntegerField(_("order"), blank=True, null=True)
     user = models.ForeignKey(
