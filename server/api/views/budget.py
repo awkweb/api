@@ -24,7 +24,7 @@ class BudgetViewSet(ModelViewSet):
     @action(detail=False, methods=["get"])
     def dashboard(self, request):
         user = request.auth.user
-        budgets = Budget.objects.filter(user=user).order_by("order")
+        budgets = Budget.objects.filter(user=user).order_by("name")
         serializer = BudgetDashboardSerializer(
             budgets, context={"request": request}, many=True
         )
