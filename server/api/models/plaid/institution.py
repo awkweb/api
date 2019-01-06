@@ -10,7 +10,10 @@ class Institution(models.Model):
     """
 
     id = models.UUIDField(_("id"), primary_key=True, default=uuid.uuid4, editable=False)
-    institution_id = models.CharField(_("institution id"), max_length=50)
+    color = models.CharField(_("color"), max_length=6)
+    institution_id = models.CharField(
+        _("institution id"), max_length=50, default="ffffff"
+    )
     name = models.CharField(_("name"), max_length=100)
     date_created = models.DateTimeField(_("date created"), default=timezone.now)
 

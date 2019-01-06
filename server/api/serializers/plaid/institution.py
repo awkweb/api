@@ -5,4 +5,5 @@ from ...models import Institution
 class InstitutionSerializer(ModelSerializer):
     class Meta:
         model = Institution
-        fields = ("institution_id", "name")
+        fields = ("color", "institution_id", "name")
+        read_only_fields = ("color",)
