@@ -1,3 +1,6 @@
+from os import environ
+from Crypto.Cipher import AES
+from Crypto import Random
 from django.db.transaction import atomic
 from django.utils.decorators import method_decorator
 from django.views.decorators.debug import sensitive_post_parameters
@@ -6,7 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_204_NO_CONTENT
 from rest_framework.viewsets import ModelViewSet
-from ..lib import PlaidClient
+from ..lib import PlaidClient, encrypt, decrypt
 from ..models import Account, Institution, Item
 from ..serializers import ItemSerializer
 
@@ -45,9 +48,11 @@ class ItemViewSet(ModelViewSet):
         user = request.auth.user
         public_token = serializer.validated_data["public_token"]
         access_token, item_id = plaid.get_access_token(public_token)
+
+        iv = user.iv_bytes
         item = Item.objects.create(
-            access_token=access_token,
-            item_id=item_id,
+            access_token=encrypt(access_token, iv),
+            item_id=encrypt(item_id, iv),
             public_token=public_token,
             user=user,
             institution=institution,
@@ -66,7 +71,10 @@ class ItemViewSet(ModelViewSet):
         return Response(ItemSerializer(item).data, status=HTTP_200_OK, headers={})
 
     def destroy(self, request, *args, **kwargs):
+        user = request.auth.user
         item = self.get_object()
-        plaid.delete_item(item.access_token)
+        iv = user.iv_bytes
+        access_token = decrypt(item.access_token, iv)
+        plaid.delete_item(access_token)
         Item.delete(item)
         return Response(status=HTTP_204_NO_CONTENT)

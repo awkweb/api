@@ -1,4 +1,5 @@
 import uuid
+from base64 import b64decode
 from django.conf import settings
 from django.contrib.gis.db import models
 from django.contrib.auth.models import (
@@ -7,11 +8,12 @@ from django.contrib.auth.models import (
     AbstractBaseUser,
 )
 from django.core.mail import send_mail
-from django.db.models.signals import post_save
+from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from rest_framework.authtoken.models import Token
+from ..api.lib import gen_iv
 
 
 class UserManager(BaseUserManager):
@@ -75,6 +77,7 @@ class AbstractUser(AbstractBaseUser, PermissionsMixin):
             "Unselect this instead of deleting accounts."
         ),
     )
+    iv = models.CharField(_("last name"), max_length=24)
     date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
 
     objects = UserManager()
@@ -122,10 +125,18 @@ class User(AbstractUser):
     class Meta(AbstractUser.Meta):
         swappable = "AUTH_USER_MODEL"
 
+    @receiver(pre_save, sender=settings.AUTH_USER_MODEL)
+    def create_iv(sender, instance=None, **kwargs):
+        instance.iv = gen_iv()
+
     @receiver(post_save, sender=settings.AUTH_USER_MODEL)
     def create_auth_token(sender, instance=None, created=False, **kwargs):
         if created:
             Token.objects.create(user=instance)
+
+    @property
+    def iv_bytes(self):
+        return b64decode(self.iv)
 
     @staticmethod
     def has_read_permission(request):
