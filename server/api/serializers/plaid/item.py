@@ -12,4 +12,11 @@ class ItemSerializer(ModelSerializer):
 
     class Meta:
         model = Item
-        fields = ("id", "public_token", "institution", "account", "date_created")
+        fields = (
+            "id",
+            "expired",
+            "public_token",
+            "institution",
+            "account",
+            "date_created",
+        )

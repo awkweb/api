@@ -4,7 +4,6 @@ from ..api import views
 
 
 router = routers.DefaultRouter()
-# router.register(r"accounts", views.AccountViewSet, base_name="accounts")
 router.register(r"budgets", views.BudgetViewSet, base_name="budgets")
 router.register(r"transactions", views.TransactionViewSet, base_name="transactions")
 router.register(r"items", views.ItemViewSet, base_name="items")
@@ -12,6 +11,7 @@ router.register(r"users", views.UserViewSet, base_name="users")
 
 urlpatterns = [
     url(r"^", include(router.urls)),
+    url(r"^items/hooks", views.handle_plaid_hook),
     url(r"^auth/password/change/", views.ChangePasswordView.as_view()),
     url(r"^auth/login/", views.LoginView.as_view()),
     url(r"^auth/logout/", views.LogoutView.as_view()),

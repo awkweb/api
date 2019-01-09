@@ -78,3 +78,29 @@ class ItemViewSet(ModelViewSet):
         plaid.delete_item(access_token)
         Item.delete(item)
         return Response(status=HTTP_204_NO_CONTENT)
+
+
+from rest_framework.status import HTTP_200_OK
+from rest_framework.response import Response
+import json
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+
+
+# todo : add this to item view set
+@csrf_exempt
+def handle_plaid_hook(request):
+    print("webhook")
+    print("==============")
+    print(request)
+    # Sometimes the payload comes in as the request body, sometimes it comes in
+    # as a POST parameter. This will handle either case.
+    if "payload" in request.POST:
+        print("payload")
+        payload = json.loads(request.POST["payload"])
+    else:
+        print("body")
+        payload = json.loads(request.body)
+
+    print(payload)
+    return Response("Password changed", status=HTTP_200_OK, headers={})

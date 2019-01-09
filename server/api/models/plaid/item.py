@@ -15,6 +15,7 @@ class Item(models.Model):
 
     id = models.UUIDField(_("id"), primary_key=True, default=uuid.uuid4, editable=False)
     access_token = models.CharField(_("access token"), max_length=200)
+    expired = models.BooleanField(_("expired"), default=False)
     item_id = models.CharField(_("item id"), max_length=100)
     public_token = models.CharField(_("public token"), max_length=200)
     user = models.ForeignKey(
