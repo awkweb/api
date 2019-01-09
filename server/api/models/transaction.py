@@ -25,8 +25,8 @@ class Transaction(models.Model):
     amount_cents = models.IntegerField(_("amount cents"))
     currency = models.CharField(_("currency"), blank=True, max_length=3)
     date = models.DateField(_("date"), default=date.today)
+    description = models.CharField(_("description"), blank=True, max_length=140)
     name = models.CharField(_("name"), max_length=100)
-    note = models.CharField(_("note"), blank=True, max_length=140)
     origin_id = models.CharField(_("origin id"), blank=True, max_length=50)
     origin = models.CharField(
         _("origin"), max_length=2, choices=ORIGINS, default=WILBUR
