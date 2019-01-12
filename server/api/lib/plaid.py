@@ -23,6 +23,17 @@ class PlaidClient:
     def __format_date(self, date):
         return f"{date:%Y-%m-%d}"
 
+    def get_public_token(self, access_token):
+        """
+        Creates a Link public token for an access token
+        Args:
+            access_token: Access token for an existing item
+        Returns:
+            public_token
+        """
+        response = self._client.Item.public_token.create(access_token)
+        return response["public_token"]
+
     def get_access_token(self, public_token):
         """
         Exchanges a public token for an access token.

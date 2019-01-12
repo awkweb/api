@@ -1,15 +1,16 @@
-from os import environ
-from Crypto.Cipher import AES
-from Crypto import Random
+from django.http import HttpResponse, HttpResponseForbidden
 from django.db.transaction import atomic
+from django.core.exceptions import SuspiciousOperation
 from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.debug import sensitive_post_parameters
 from dry_rest_permissions.generics import DRYPermissions
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_204_NO_CONTENT
 from rest_framework.viewsets import ModelViewSet
-from ..lib import PlaidClient, encrypt, decrypt
+from ..lib import PlaidClient
 from ..models import Account, Institution, Item
 from ..serializers import ItemSerializer
 
@@ -21,7 +22,7 @@ sensitive_post_parameters_m = method_decorator(
 
 class ItemViewSet(ModelViewSet):
     """
-    API endpoint that allows Accounts to be deleted, listed, or updated.
+    API endpoint that allows Accounts to be created, deleted, listed, or updated.
     """
 
     permission_classes = (IsAuthenticated, DRYPermissions)
@@ -29,11 +30,22 @@ class ItemViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return Item.objects.filter(user=user)
+        return Item.objects.filter(user=user).order_by("date_created")
 
     @sensitive_post_parameters_m
     def dispatch(self, *args, **kwargs):
         return super(ItemViewSet, self).dispatch(*args, **kwargs)
+
+    def list(self, request):
+        user = request.user
+        items = Item.objects.filter(user=user).order_by("date_created")
+        for item in items:
+            if item.expired:
+                public_token = plaid.get_public_token(item.access_token)
+                item.public_token = public_token
+                item.save()
+        serializer = ItemSerializer(items, many=True)
+        return Response(serializer.data)
 
     @atomic
     def create(self, request, *args, **kwargs):
@@ -48,11 +60,9 @@ class ItemViewSet(ModelViewSet):
         user = request.auth.user
         public_token = serializer.validated_data["public_token"]
         access_token, item_id = plaid.get_access_token(public_token)
-
-        iv = user.iv_bytes
         item = Item.objects.create(
-            access_token=encrypt(access_token, iv),
-            item_id=encrypt(item_id, iv),
+            access_token=access_token,
+            item_id=item_id,
             public_token=public_token,
             user=user,
             institution=institution,
@@ -71,36 +81,41 @@ class ItemViewSet(ModelViewSet):
         return Response(ItemSerializer(item).data, status=HTTP_200_OK, headers={})
 
     def destroy(self, request, *args, **kwargs):
-        user = request.auth.user
         item = self.get_object()
-        iv = user.iv_bytes
-        access_token = decrypt(item.access_token, iv)
-        plaid.delete_item(access_token)
+        plaid.delete_item(item.access_token)
         Item.delete(item)
         return Response(status=HTTP_204_NO_CONTENT)
 
-
-from rest_framework.status import HTTP_200_OK
-from rest_framework.response import Response
-import json
-from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
-
-
-# todo : add this to item view set
-@csrf_exempt
-def handle_plaid_hook(request):
-    print("webhook")
-    print("==============")
-    print(request)
-    # Sometimes the payload comes in as the request body, sometimes it comes in
-    # as a POST parameter. This will handle either case.
-    if "payload" in request.POST:
-        print("payload")
-        payload = json.loads(request.POST["payload"])
-    else:
-        print("body")
-        payload = json.loads(request.body)
-
-    print(payload)
-    return Response("Password changed", status=HTTP_200_OK, headers={})
+    @csrf_exempt
+    @action(detail=False, methods=["post"], permission_classes=(AllowAny,))
+    def hooks(self, request):
+        try:
+            data = request.data
+            webhook_code = data["webhook_code"]
+            item_id = data["item_id"]
+            if webhook_code in [
+                "INITIAL_UPDATE",
+                "HISTORICAL_UPDATE",
+                "DEFAULT_UPDATE",
+                "TRANSACTIONS_REMOVED",
+            ]:
+                print(data)
+                new_transactions = data["new_transactions"]
+                item = Item.objects.get(item_id=item_id)
+                # response = plaid.get_transactions(
+                #     item.access_token, start=item.date_last_fetched
+                # )
+                # transactions_data += response
+                # item.date_last_fetched = timezone.now()
+                # item.save()
+                print(new_transactions, item.access_token)
+                return HttpResponse()
+            elif webhook_code == "ERROR":
+                item = Item.objects.get(item_id=item_id)
+                public_token = plaid.get_public_token(item.access_token)
+                item.expired = True
+                item.public_token = public_token
+                item.save()
+                return HttpResponse()
+        except SuspiciousOperation:
+            return HttpResponseForbidden("Invalid signature header")

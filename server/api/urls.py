@@ -11,7 +11,6 @@ router.register(r"users", views.UserViewSet, base_name="users")
 
 urlpatterns = [
     url(r"^", include(router.urls)),
-    url(r"^items/hooks", views.handle_plaid_hook),
     url(r"^auth/password/change/", views.ChangePasswordView.as_view()),
     url(r"^auth/login/", views.LoginView.as_view()),
     url(r"^auth/logout/", views.LogoutView.as_view()),

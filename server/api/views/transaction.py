@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from ..filters import TransactionFilter
-from ..lib import PlaidClient, decrypt
+from ..lib import PlaidClient
 from ..models import Account, Item, Transaction
 from ..serializers import TransactionSerializer
 
@@ -43,13 +43,11 @@ class TransactionViewSet(ModelViewSet):
         items = Item.objects.filter(user=user)
         transactions_data = []
         for item in items:
-            iv = user.iv_bytes
-            access_token = decrypt(item.access_token, iv)
             if item.date_last_fetched is None:
-                response = plaid.get_transactions(access_token)
+                response = plaid.get_transactions(item.access_token)
             else:
                 response = plaid.get_transactions(
-                    access_token, start=item.date_last_fetched
+                    item.access_token, start=item.date_last_fetched
                 )
             transactions_data += response
             item.date_last_fetched = timezone.now()
