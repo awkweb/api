@@ -1,8 +1,8 @@
+import datetime
 from django.http import HttpResponse, HttpResponseForbidden
 from django.db.transaction import atomic
 from django.core.exceptions import SuspiciousOperation
 from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.debug import sensitive_post_parameters
 from dry_rest_permissions.generics import DRYPermissions
 from rest_framework.decorators import action
@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_204_NO_CONTENT
 from rest_framework.viewsets import ModelViewSet
 from ..lib import PlaidClient
-from ..models import Account, Institution, Item
+from ..models import Account, Institution, Item, Transaction
 from ..serializers import ItemSerializer
 
 plaid = PlaidClient()
@@ -41,7 +41,8 @@ class ItemViewSet(ModelViewSet):
         items = Item.objects.filter(user=user).order_by("date_created")
         for item in items:
             if item.expired:
-                public_token = plaid.get_public_token(item.access_token)
+                print(item._access_token)
+                public_token = plaid.get_public_token(item._access_token)
                 item.public_token = public_token
                 item.save()
         serializer = ItemSerializer(items, many=True)
@@ -82,37 +83,58 @@ class ItemViewSet(ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         item = self.get_object()
-        plaid.delete_item(item.access_token)
+        print(item._access_token)
+        plaid.delete_item(item._access_token)
         Item.delete(item)
         return Response(status=HTTP_204_NO_CONTENT)
 
-    @csrf_exempt
     @action(detail=False, methods=["post"], permission_classes=(AllowAny,))
     def hooks(self, request):
         try:
             data = request.data
             webhook_code = data["webhook_code"]
+            if webhook_code is None:
+                return HttpResponseForbidden("Invalid signature header")
+
             item_id = data["item_id"]
+            print(webhook_code)
             if webhook_code in [
                 "INITIAL_UPDATE",
                 "HISTORICAL_UPDATE",
                 "DEFAULT_UPDATE",
-                "TRANSACTIONS_REMOVED",
             ]:
-                print(data)
                 new_transactions = data["new_transactions"]
                 item = Item.objects.get(item_id=item_id)
-                # response = plaid.get_transactions(
-                #     item.access_token, start=item.date_last_fetched
-                # )
-                # transactions_data += response
-                # item.date_last_fetched = timezone.now()
-                # item.save()
-                print(new_transactions, item.access_token)
+                if webhook_code == "INITIAL_UPDATE" or webhook_code == "DEFAULT_UPDATE":
+                    response = plaid.get_transactions(
+                        item._access_token, count=new_transactions
+                    )
+                    # add right to database
+                    print(len(response))
+                elif webhook_code == "HISTORICAL_UPDATE":
+                    start = datetime.datetime.utcnow() - datetime.timedelta(days=1095)
+                    response = plaid.get_transactions(
+                        item._access_token, count=new_transactions, start=start
+                    )
+                    # dedupe and add
+                    print(len(response))
+                elif webhook_code == "DEFAULT_UPDATE":
+                    response = plaid.get_transactions(
+                        item._access_token, count=new_transactions
+                    )
+                    # add right to database
+                    print(len(response))
+                print(new_transactions, item._access_token)
+                return HttpResponse()
+            elif webhook_code == "TRANSACTIONS_REMOVED":
+                removed_transactions = data["removed_transactions"]
+                # for id in removed_transactions:
+                #     transaction = Transaction.objects.get(origin_id=id)
                 return HttpResponse()
             elif webhook_code == "ERROR":
                 item = Item.objects.get(item_id=item_id)
-                public_token = plaid.get_public_token(item.access_token)
+                print(item._access_token)
+                public_token = plaid.get_public_token(item._access_token)
                 item.expired = True
                 item.public_token = public_token
                 item.save()

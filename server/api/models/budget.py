@@ -14,7 +14,6 @@ class Budget(models.Model):
     amount_cents = models.IntegerField(_("amount_cents"))
     description = models.CharField(_("description"), blank=True, max_length=280)
     name = models.CharField(_("name"), max_length=25)
-    order = models.IntegerField(_("order"), blank=True, null=True)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_("user")
     )

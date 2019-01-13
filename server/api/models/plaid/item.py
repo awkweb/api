@@ -1,8 +1,11 @@
 import uuid
 from django.conf import settings
 from django.contrib.gis.db import models
+from django.dispatch import receiver
+from django.db.models.signals import post_save
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
+from ...lib import decrypt, encrypt
 from .institution import Institution
 
 
@@ -34,6 +37,10 @@ class Item(models.Model):
     )
     date_created = models.DateTimeField(_("date created"), default=timezone.now)
 
+    @property
+    def _access_token(self):
+        return decrypt(self.access_token, self.user._iv)
+
     class Meta:
         db_table = "api_plaid_item"
         indexes = [models.Index(fields=["item_id"])]
@@ -53,3 +60,10 @@ class Item(models.Model):
 
     def has_object_write_permission(self, request):
         return request.user == self.user
+
+
+@receiver(post_save, sender=Item)
+def create_access_token(sender, instance=None, created=False, **kwargs):
+    if created:
+        instance.access_token = encrypt(instance.access_token, instance.user._iv)
+        instance.save()

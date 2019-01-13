@@ -8,11 +8,12 @@ from django.contrib.auth.models import (
     AbstractBaseUser,
 )
 from django.core.mail import send_mail
-from django.db.models.signals import pre_save, post_save
+from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from rest_framework.authtoken.models import Token
+from ..api.lib import gen_iv
 
 
 class UserManager(BaseUserManager):
@@ -76,7 +77,12 @@ class AbstractUser(AbstractBaseUser, PermissionsMixin):
             "Unselect this instead of deleting accounts."
         ),
     )
+    iv = models.CharField(_("iv"), max_length=24)
     date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
+
+    @property
+    def _iv(self):
+        return b64decode(self.iv)
 
     objects = UserManager()
 
@@ -123,11 +129,6 @@ class User(AbstractUser):
     class Meta(AbstractUser.Meta):
         swappable = "AUTH_USER_MODEL"
 
-    @receiver(post_save, sender=settings.AUTH_USER_MODEL)
-    def create_auth_token(sender, instance=None, created=False, **kwargs):
-        if created:
-            Token.objects.create(user=instance)
-
     @staticmethod
     def has_read_permission(request):
         return True
@@ -141,3 +142,16 @@ class User(AbstractUser):
 
     def has_object_write_permission(self, request):
         return request.user == self
+
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def create_iv(sender, instance=None, created=False, **kwargs):
+    if created:
+        instance.iv = gen_iv()
+        instance.save()
+
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def create_auth_token(sender, instance=None, created=False, **kwargs):
+    if created:
+        Token.objects.create(user=instance)

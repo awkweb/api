@@ -60,6 +60,7 @@ class PlaidClient:
     def get_transactions(
         self,
         access_token,
+        count: 100,
         start: datetime.datetime = datetime.datetime.utcnow()
         - datetime.timedelta(days=30),
         end: datetime.datetime = datetime.datetime.utcnow(),
@@ -68,6 +69,7 @@ class PlaidClient:
         Retrieves transactions from the institution specified by the stored access token.
         Args:
             access_token: Plaid token for accessing users account
+            count: Number of transactions to fetch. Default 100.
             start: Start date for the transaction history set. Default one month before today.
             end: End date for the transaction history set. Default today.
         Returns:
@@ -76,6 +78,6 @@ class PlaidClient:
         start_date = self.__format_date(start)
         end_date = self.__format_date(end)
         response = self._client.Transactions.get(
-            access_token, start_date=start_date, end_date=end_date, count=500
+            access_token, start_date=start_date, end_date=end_date, count=count
         )
         return response["transactions"]
