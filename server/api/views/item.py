@@ -41,7 +41,6 @@ class ItemViewSet(ModelViewSet):
         items = Item.objects.filter(user=user).order_by("date_created")
         for item in items:
             if item.expired:
-                print(item._access_token)
                 public_token = plaid.get_public_token(item._access_token)
                 item.public_token = public_token
                 item.save()
@@ -83,7 +82,6 @@ class ItemViewSet(ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         item = self.get_object()
-        print(item._access_token)
         plaid.delete_item(item._access_token)
         Item.delete(item)
         return Response(status=HTTP_204_NO_CONTENT)
@@ -92,52 +90,83 @@ class ItemViewSet(ModelViewSet):
     def hooks(self, request):
         try:
             data = request.data
-            webhook_code = data["webhook_code"]
+            webhook_code = data.get("webhook_code")
             if webhook_code is None:
                 return HttpResponseForbidden("Invalid signature header")
 
-            item_id = data["item_id"]
-            print(webhook_code)
-            if webhook_code in [
-                "INITIAL_UPDATE",
-                "HISTORICAL_UPDATE",
-                "DEFAULT_UPDATE",
-            ]:
-                new_transactions = data["new_transactions"]
-                item = Item.objects.get(item_id=item_id)
-                if webhook_code == "INITIAL_UPDATE" or webhook_code == "DEFAULT_UPDATE":
-                    response = plaid.get_transactions(
-                        item._access_token, count=new_transactions
-                    )
-                    # add right to database
-                    print(len(response))
-                elif webhook_code == "HISTORICAL_UPDATE":
-                    start = datetime.datetime.utcnow() - datetime.timedelta(days=1095)
-                    response = plaid.get_transactions(
-                        item._access_token, count=new_transactions, start=start
-                    )
-                    # dedupe and add
-                    print(len(response))
-                elif webhook_code == "DEFAULT_UPDATE":
-                    response = plaid.get_transactions(
-                        item._access_token, count=new_transactions
-                    )
-                    # add right to database
-                    print(len(response))
-                print(new_transactions, item._access_token)
+            if webhook_code == "TRANSACTIONS_REMOVED":
+                transaction_ids = data.get("removed_transactions")
+                Transaction.objects.filter(origin_id__in=transaction_ids).delete()
                 return HttpResponse()
-            elif webhook_code == "TRANSACTIONS_REMOVED":
-                removed_transactions = data["removed_transactions"]
-                # for id in removed_transactions:
-                #     transaction = Transaction.objects.get(origin_id=id)
+
+            item_id = data.get("item_id")
+            item = Item.objects.get(item_id=item_id)
+            if webhook_code == "INITIAL_UPDATE" or webhook_code == "DEFAULT_UPDATE":
+                new_transactions = data.get("new_transactions")
+                response = plaid.get_transactions(
+                    item._access_token, count=new_transactions
+                )
+                transactions = []
+                for transaction in response:
+                    amount_cents = transaction.get("amount") * 100
+                    account = Account.objects.get(item_id=item.id)
+                    currency = transaction.get("iso_currency_code")
+                    date = transaction.get("date")
+                    name = transaction.get("name")
+                    origin_id = transaction.get("transaction_id")
+                    transactions.append(
+                        Transaction(
+                            amount_cents=amount_cents,
+                            currency=currency,
+                            date=date,
+                            name=name,
+                            origin_id=origin_id,
+                            origin="PL",
+                            account=account,
+                            user=item.user,
+                        )
+                    )
+                Transaction.objects.bulk_create(transactions)
                 return HttpResponse()
+
+            elif webhook_code == "HISTORICAL_UPDATE":
+                start = datetime.datetime.utcnow() - datetime.timedelta(days=1095)
+                new_transactions = data.get("new_transactions")
+                response = plaid.get_transactions(
+                    item._access_token, count=new_transactions, start=start
+                )
+                transactions = []
+                for transaction in response:
+                    try:
+                        origin_id = transaction.get("transaction_id")
+                        Transaction.objects.get(origin_id=origin_id)
+                    except Transaction.DoesNotExist:
+                        amount_cents = transaction.get("amount") * 100
+                        account = Account.objects.get(item_id=item.id)
+                        currency = transaction.get("iso_currency_code")
+                        date = transaction.get("date")
+                        name = transaction.get("name")
+                        transactions.append(
+                            Transaction(
+                                amount_cents=amount_cents,
+                                currency=currency,
+                                date=date,
+                                name=name,
+                                origin_id=origin_id,
+                                origin="PL",
+                                account=account,
+                                user=item.user,
+                            )
+                        )
+                Transaction.objects.bulk_create(transactions)
+                return HttpResponse()
+
             elif webhook_code == "ERROR":
-                item = Item.objects.get(item_id=item_id)
-                print(item._access_token)
                 public_token = plaid.get_public_token(item._access_token)
                 item.expired = True
                 item.public_token = public_token
                 item.save()
                 return HttpResponse()
+
         except SuspiciousOperation:
             return HttpResponseForbidden("Invalid signature header")
