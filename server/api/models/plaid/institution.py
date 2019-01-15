@@ -10,10 +10,7 @@ class Institution(models.Model):
     """
 
     id = models.UUIDField(_("id"), primary_key=True, default=uuid.uuid4, editable=False)
-    color = models.CharField(_("color"), max_length=6)
-    institution_id = models.CharField(
-        _("institution id"), max_length=50, default="ffffff"
-    )
+    institution_id = models.CharField(_("institution id"), max_length=50)
     name = models.CharField(_("name"), max_length=100)
     date_created = models.DateTimeField(_("date created"), default=timezone.now)
 
@@ -23,4 +20,4 @@ class Institution(models.Model):
         verbose_name_plural = "institutions"
 
     def __str__(self):
-        return self.name.title()
+        return self.name
