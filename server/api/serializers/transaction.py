@@ -1,35 +1,46 @@
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.serializers import (
     BooleanField,
     CurrentUserDefault,
     ModelSerializer,
     PrimaryKeyRelatedField,
+    RelatedField,
 )
 from ..models import Account, Budget, Transaction
+from .plaid.account import AccountSerializer
+from .budget import BudgetSerializer
 from .transaction_location import TransactionLocationSerializer
 
 
-class AccountPrimaryKeyRelatedField(PrimaryKeyRelatedField):
-    def get_queryset(self):
-        request = self.context.get("request", None)
-        queryset = super(AccountPrimaryKeyRelatedField, self).get_queryset()
-        if not request or not queryset:
-            return None
-        account_id = request.data["account"]
-        return queryset.filter(id=account_id)
+class AccountPrimaryKeyRelatedField(RelatedField):
+    def to_representation(self, data):
+        serializer = AccountSerializer(data, fields=("mask", "name"))
+        return serializer.data
+
+    def to_internal_value(self, data):
+        try:
+            return self.get_queryset().get(pk=data)
+        except ObjectDoesNotExist:
+            self.fail("does_not_exist", pk_value=data)
+        except (TypeError, ValueError):
+            self.fail("incorrect_type", data_type=type(data).__name__)
 
 
-class BudgetPrimaryKeyRelatedField(PrimaryKeyRelatedField):
-    def get_queryset(self):
-        request = self.context.get("request", None)
-        queryset = super(BudgetPrimaryKeyRelatedField, self).get_queryset()
-        if not request or not queryset:
-            return None
-        budget_id = request.data["budget"]
-        return queryset.filter(id=budget_id)
+class BudgetPrimaryKeyRelatedField(RelatedField):
+    def to_representation(self, data):
+        serializer = BudgetSerializer(data, fields=("id", "name"))
+        return serializer.data
+
+    def to_internal_value(self, data):
+        try:
+            return self.get_queryset().get(pk=data)
+        except ObjectDoesNotExist:
+            self.fail("does_not_exist", pk_value=data)
+        except (TypeError, ValueError):
+            self.fail("incorrect_type", data_type=type(data).__name__)
 
 
 class TransactionSerializer(ModelSerializer):
-    new = BooleanField(default=False, read_only=True)
     account = AccountPrimaryKeyRelatedField(
         allow_null=True, queryset=Account.objects, required=False
     )
@@ -56,5 +67,4 @@ class TransactionSerializer(ModelSerializer):
             "budget",
             "transaction_location",
             "user",
-            "new",
         )
