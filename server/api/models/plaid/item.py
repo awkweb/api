@@ -32,9 +32,6 @@ class Item(models.Model):
         related_name="items",
         verbose_name=_("institution"),
     )
-    date_last_fetched = models.DateTimeField(
-        _("date last fetched"), blank=True, null=True
-    )
     date_created = models.DateTimeField(_("date created"), default=timezone.now)
 
     @property
