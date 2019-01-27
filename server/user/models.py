@@ -1,5 +1,4 @@
 import uuid
-from base64 import b64decode
 from django.conf import settings
 from django.contrib.gis.db import models
 from django.contrib.auth.models import (
@@ -77,12 +76,12 @@ class AbstractUser(AbstractBaseUser, PermissionsMixin):
             "Unselect this instead of deleting accounts."
         ),
     )
-    iv = models.CharField(_("iv"), max_length=24)
+    iv = models.CharField(_("iv"), max_length=100)
     date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
 
     @property
     def _iv(self):
-        return b64decode(self.iv)
+        return self.iv.encode()
 
     objects = UserManager()
 
