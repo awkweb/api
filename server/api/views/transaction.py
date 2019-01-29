@@ -4,6 +4,7 @@ from django.utils import timezone
 from dry_rest_permissions.generics import DRYPermissions
 from rest_framework.decorators import action
 from rest_framework.status import HTTP_200_OK, HTTP_204_NO_CONTENT
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
@@ -15,6 +16,10 @@ from ..serializers import TransactionSerializer
 plaid = PlaidClient()
 
 
+class TransactionPagination(PageNumberPagination):
+    page_size = 5
+
+
 class TransactionViewSet(ModelViewSet):
     """
     API endpoint that allows Transactions to be fully manipulated.
@@ -22,6 +27,7 @@ class TransactionViewSet(ModelViewSet):
 
     permission_classes = (IsAuthenticated, DRYPermissions)
     serializer_class = TransactionSerializer
+    pagination_class = TransactionPagination
     filterset_class = TransactionFilter
 
     def get_queryset(self):
