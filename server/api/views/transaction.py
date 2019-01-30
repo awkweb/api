@@ -17,7 +17,7 @@ plaid = PlaidClient()
 
 
 class TransactionPagination(PageNumberPagination):
-    page_size = 5
+    page_size = 10
 
 
 class TransactionViewSet(ModelViewSet):
