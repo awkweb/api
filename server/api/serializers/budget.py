@@ -24,10 +24,12 @@ class BudgetDashboardSerializer(DynamicFieldsModelSerializer):
         transactions = Transaction.objects.filter(
             budget=obj, date__range=[start_date, end_date], date_deleted=None
         )
+        print(start_date, end_date, transactions)
         spent = (
             transactions.aggregate(Sum("amount_cents")).get("amount_cents__sum") or 0
         )
         transaction_count = transactions.count()
+        print(spent)
         return {
             "id": obj.id,
             "budgeted": obj.amount_cents,
