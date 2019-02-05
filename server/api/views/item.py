@@ -40,6 +40,7 @@ class ItemViewSet(ModelViewSet):
         user = request.user
         items = Item.objects.filter(user=user).order_by("institution__name")
         for item in items:
+            print(item.institution, item._access_token)
             if item.expired:
                 public_token = plaid.get_public_token(item._access_token)
                 item.public_token = public_token
