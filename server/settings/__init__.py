@@ -1,6 +1,6 @@
 import os
 
-if os.getenv('DJ_ENV') == 'prod':
+if os.getenv("DJANGO_ENV") == "prod":
     from .prod import *
 else:
     from .dev import *

@@ -8,7 +8,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ["DJ_SECRET_KEY"]
+SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
 
 
 # Application definition
@@ -84,11 +84,11 @@ AUTH_USER_MODEL = "user.User"
 DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
-        "NAME": os.environ["DJ_DB_NAME"],
-        "USER": os.environ["DJ_DB_USER"],
-        "PASSWORD": os.environ["DJ_DB_PASSWORD"],
-        "HOST": os.environ["DJ_DB_HOST"],
-        "PORT": os.environ["DJ_DB_PORT"],
+        "NAME": os.environ["DJANGO_DB_NAME"],
+        "USER": os.environ["DJANGO_DB_USER"],
+        "PASSWORD": os.environ["DJANGO_DB_PASSWORD"],
+        "HOST": os.environ["DJANGO_DB_HOST"],
+        "PORT": os.environ["DJANGO_DB_PORT"],
     }
 }
 
