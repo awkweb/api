@@ -1,66 +1,98 @@
 version: 2.1
 orbs:
   aws-cli: circleci/aws-cli@0.1.4
+  aws-ecr: circleci/aws-ecr@3.0.0
+  aws-ecs: circleci/aws-ecs@0.0.6
+defaults: &defaults
+  docker:
+    - image: circleci/python:3.6.1
+references:
+  - &set_up_environment_variables
+    run:
+      name: Setup common environment variables
+      command: |
+        echo 'export ACCOUNT_URL="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"' >> $BASH_ENV
+        echo 'export FULL_IMAGE_URL="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${AWS_ECR_REPOSITORY_NAME}:${CIRCLE_SHA1}"' >> $BASH_ENV
+  - &save_image_to_archive
+    run:
+      name: Save image to an archive
+      command: |
+        mkdir docker-image
+        docker save -o docker-image/image.tar $FULL_IMAGE_URL
+  - &load_image
+    run:
+      name: Load image
+      command: |
+        docker load --input workspace/docker-image/image.tar
+  - &ecr_login
+    run:
+      name: ECR login
+      command: |
+        eval $(aws ecr get-login --region $AWS_DEFAULT_REGION --registry-ids $AWS_ACCOUNT_ID --no-include-email)
+  - &aws_configure
+    aws-cli/configure:
+      aws-access-key-id: $AWS_ACCESS_KEY_ID
+      aws-secret-access-key: $AWS_SECRET_ACCESS_KEY
+      aws-region: "$AWS_DEFAULT_REGION"
 jobs:
   build:
-    docker:
-      - image: circleci/python:3.6.1
+    <<: *defaults
     steps:
       - checkout
       - setup_remote_docker
-      - run:
-          name: Setup common environment variables
-          command: |
-            echo 'export ECR_REPOSITORY_NAME="${AWS_RESOURCE_NAME_PREFIX}"' >> $BASH_ENV
-            echo 'export FULL_IMAGE_NAME="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_REPOSITORY_NAME}:${CIRCLE_SHA1}"' >> $BASH_ENV
-      - run:
-          name: Build image
-          command: |
-            docker build -t $FULL_IMAGE_NAME .
-      - run:
-          name: Save image to an archive
-          command: |
-            mkdir docker-image
-            docker save -o docker-image/image.tar $FULL_IMAGE_NAME
+      - *set_up_environment_variables
+      - aws-ecr/build-image:
+          account-url: ACCOUNT_URL
+          repo: $AWS_ECR_REPOSITORY_NAME
+          tag: $CIRCLE_SHA1
+      - *save_image_to_archive
       - persist_to_workspace:
           root: .
           paths:
             - docker-image
-  deploy:
-    docker:
-      - image: circleci/python:3.6.1
-    environment:
-      AWS_DEFAULT_OUTPUT: json
+  push:
+    <<: *defaults
     steps:
       - checkout
       - setup_remote_docker
       - attach_workspace:
           at: workspace
       - aws-cli/install
-      - aws-cli/configure:
-          aws-access-key-id: "$AWS_ACCESS_KEY_ID"
-          aws-region: "$AWS_DEFAULT_REGION"
-      - run:
-          name: Load image
-          command: |
-            docker load --input workspace/docker-image/image.tar
-      - run:
-          name: Setup common environment variables
-          command: |
-            echo 'export ECR_REPOSITORY_NAME="${AWS_RESOURCE_NAME_PREFIX}"' >> $BASH_ENV
-            echo 'export FULL_IMAGE_NAME="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_REPOSITORY_NAME}:${CIRCLE_SHA1}"' >> $BASH_ENV
-      - run:
-          name: Push image
-          command: |
-            eval $(aws ecr get-login --region $AWS_DEFAULT_REGION --registry-ids $AWS_ACCOUNT_ID --no-include-email)
-            docker push $FULL_IMAGE_NAME
+      - *aws_configure
+      - *load_image
+      - *set_up_environment_variables
+      - *ecr_login
+      - aws-ecr/push-image:
+          account-url: ACCOUNT_URL
+          repo: $AWS_ECR_REPOSITORY_NAME
+          tag: $CIRCLE_SHA1
+  deploy:
+    <<: *defaults
+    steps:
+      - aws-cli/install
+      - *aws_configure
+      - *set_up_environment_variables
+      - aws-ecs/update-service:
+          family: "wilbur-prod-api"
+          cluster-name: "wilbur-prod"
+          service-name: "api"
+          container-image-name-updates: "container=api,image-and-tag=${FULL_IMAGE_URL}"
 workflows:
   build-deploy:
     jobs:
-      - build
-      - deploy:
+      - build:
+          context: wilbur
+      - push:
+          context: wilbur
           requires:
             - build
+          filters:
+            branches:
+              only: master
+      - deploy:
+          context: wilbur
+          requires:
+            - push
           filters:
             branches:
               only: master
