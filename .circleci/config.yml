@@ -1,59 +1,27 @@
 version: 2.1
 orbs:
   aws-cli: circleci/aws-cli@0.1.4
+  aws-ecr: circleci/aws-ecr@1.0.0
+  aws-ecs: circleci/aws-ecs@0.0.6
 jobs:
   build:
-    docker:
-      - image: circleci/python:3.6.1
-    steps:
-      - checkout
-      - setup_remote_docker
-      - run:
-          name: Setup common environment variables
-          command: |
-            echo 'export ECR_REPOSITORY_NAME="${AWS_RESOURCE_NAME_PREFIX}"' >> $BASH_ENV
-            echo 'export FULL_IMAGE_NAME="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_REPOSITORY_NAME}:${CIRCLE_SHA1}"' >> $BASH_ENV
-      - run:
-          name: Build image
-          command: |
-            docker build -t $FULL_IMAGE_NAME .
-      - run:
-          name: Save image to an archive
-          command: |
-            mkdir docker-image
-            docker save -o docker-image/image.tar $FULL_IMAGE_NAME
-      - persist_to_workspace:
-          root: .
-          paths:
-            - docker-image
+    - aws-ecr/build_image:
+      account-url: "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+      repo: "${AWS_ECR_REPOSITORY_NAME}"
+      tag: "${CIRCLE_SHA1}"
   deploy:
-    docker:
-      - image: circleci/python:3.6.1
-    environment:
-      AWS_DEFAULT_OUTPUT: json
     steps:
-      - checkout
-      - setup_remote_docker
-      - attach_workspace:
-          at: workspace
-      - aws-cli/install
       - aws-cli/configure:
-          aws-access-key-id: "$AWS_ACCESS_KEY_ID"
-          aws-region: "$AWS_DEFAULT_REGION"
+          aws-access-key-id: "${AWS_ACCESS_KEY_ID}"
+          aws-region: "${AWS_REGION}"
       - run:
-          name: Load image
+          name: ECR login
           command: |
-            docker load --input workspace/docker-image/image.tar
-      - run:
-          name: Setup common environment variables
-          command: |
-            echo 'export ECR_REPOSITORY_NAME="${AWS_RESOURCE_NAME_PREFIX}"' >> $BASH_ENV
-            echo 'export FULL_IMAGE_NAME="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_REPOSITORY_NAME}:${CIRCLE_SHA1}"' >> $BASH_ENV
-      - run:
-          name: Push image
-          command: |
-            eval $(aws ecr get-login --region $AWS_DEFAULT_REGION --registry-ids $AWS_ACCOUNT_ID --no-include-email)
-            docker push $FULL_IMAGE_NAME
+            eval $(aws ecr get-login --region $AWS_REGION --registry-ids $AWS_ACCOUNT_ID --no-include-email)
+      - aws-ecr/push_image:
+          account-url: "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+          repo: "${AWS_ECR_REPOSITORY_NAME}"
+          tag: "${CIRCLE_SHA1}"
 workflows:
   build-deploy:
     jobs:
