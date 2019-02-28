@@ -1,2 +1,4 @@
 .circleci
+.gitignore
+README.md
 *.sock
