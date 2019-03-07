@@ -1,7 +1,7 @@
+import os
 from .base import *
 
 ALLOWED_HOSTS = [
-    "*",
     ".wilbur.app",
     # Plaid Webhook Hosts
     "52.21.26.131",
@@ -11,3 +11,4 @@ ALLOWED_HOSTS = [
 ]
 CORS_ORIGIN_WHITELIST = ("api.wilbur.app", "wilbur.app")
 DEBUG = True
+STATIC_URL = os.environ["DJANGO_STATIC_URL"]
