@@ -1,8 +1,9 @@
 version: 2.1
 orbs:
   aws-cli: circleci/aws-cli@0.1.4
-  aws-ecr: circleci/aws-ecr@3.0.0
   aws-ecs: circleci/aws-ecs@0.0.6
+  aws-ecr: circleci/aws-ecr@3.0.0
+  aws-s3: circleci/aws-s3@1.0.4
 defaults: &defaults
   docker:
     - image: circleci/python:3.6.1
@@ -19,6 +20,13 @@ references:
       command: |
         mkdir docker-image
         docker save -o docker-image/image.tar $FULL_IMAGE_URL
+  - &collectstatic
+    run:
+      name: Collect Django staticfiles
+      command: |
+        mkdir static
+        docker run $FULL_IMAGE_URL python manage.py collectstatic --noinput
+        docker cp /home/api/static static
   - &load_image
     run:
       name: Load image
@@ -46,10 +54,12 @@ jobs:
           repo: $AWS_ECR_REPOSITORY_NAME
           tag: $CIRCLE_SHA1
       - *save_image_to_archive
+      - *collectstatic
       - persist_to_workspace:
           root: .
           paths:
             - docker-image
+            - static
   push:
     <<: *defaults
     steps:
@@ -66,6 +76,10 @@ jobs:
           account-url: ACCOUNT_URL
           repo: $AWS_ECR_REPOSITORY_NAME
           tag: $CIRCLE_SHA1
+      - aws-s3/sync:
+          from: static
+          to: "s3://${AWS_S3_BUCKET_NAME}"
+          overwrite: true
   deploy:
     <<: *defaults
     steps:
