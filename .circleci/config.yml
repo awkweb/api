@@ -25,8 +25,9 @@ references:
       name: Collect Django staticfiles
       command: |
         mkdir static
-        docker run $FULL_IMAGE_URL python manage.py collectstatic --noinput
-        docker cp /home/api/static static
+        docker run -e DJANGO_ENV -e DJANGO_SECRET_KEY -e DJANGO_STATIC_URL --name api $FULL_IMAGE_URL python manage.py collectstatic --noinput
+        docker cp api:/home/api/static .
+        docker rm -v api
   - &load_image
     run:
       name: Load image
@@ -42,6 +43,11 @@ references:
       aws-access-key-id: $AWS_ACCESS_KEY_ID
       aws-secret-access-key: $AWS_SECRET_ACCESS_KEY
       aws-region: "$AWS_DEFAULT_REGION"
+  - &s3_sync
+    run:
+      name: Deploy to S3
+      command: |
+        aws s3 sync workspace/static s3://${AWS_S3_BUCKET_NAME} --delete
 jobs:
   build:
     <<: *defaults
@@ -76,10 +82,7 @@ jobs:
           account-url: ACCOUNT_URL
           repo: $AWS_ECR_REPOSITORY_NAME
           tag: $CIRCLE_SHA1
-      - aws-s3/sync:
-          from: static
-          to: "s3://${AWS_S3_BUCKET_NAME}"
-          overwrite: true
+      - *s3_sync
   deploy:
     <<: *defaults
     steps:

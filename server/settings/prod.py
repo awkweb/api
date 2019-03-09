@@ -1,6 +1,7 @@
 import os
 from .base import *
 
+ALLOWED_CIDR_NETS = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
 ALLOWED_HOSTS = [
     ".wilbur.app",
     # Plaid Webhook Hosts

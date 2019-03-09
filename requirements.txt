@@ -14,6 +14,7 @@ colorama==0.3.7
 cryptography==2.5
 defusedxml==0.5.0
 Django==2.0.10
+django-allow-cidr==0.3.1
 django-braces==1.12.0
 django-cors-headers==2.4.0
 django-filter==2.0.0
