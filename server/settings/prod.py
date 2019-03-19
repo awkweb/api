@@ -10,6 +10,6 @@ ALLOWED_HOSTS = [
     "52.41.247.19",
     "52.88.82.239",
 ]
-CORS_ORIGIN_WHITELIST = ("api.wilbur.app", "wilbur.app")
+CORS_ORIGIN_REGEX_WHITELIST = (r"^(https?://)?(\w+\.)?wilbur\.app$",)
 DEBUG = True
 STATIC_URL = os.getenv("DJANGO_STATIC_URL")
