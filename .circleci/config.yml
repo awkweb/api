@@ -90,24 +90,24 @@ jobs:
       - *aws_configure
       - *set_up_environment_variables
       - aws-ecs/update-service:
-          family: "wilbur-prod-api"
-          cluster-name: "wilbur-prod"
+          family: "butter-prod-api"
+          cluster-name: "butter-prod"
           service-name: "api"
           container-image-name-updates: "container=api,image-and-tag=${FULL_IMAGE_URL}"
 workflows:
   build-deploy:
     jobs:
       - build:
-          context: wilbur
+          context: butter
       - push:
-          context: wilbur
+          context: butter
           requires:
             - build
           filters:
             branches:
               only: master
       - deploy:
-          context: wilbur
+          context: butter
           requires:
             - push
           filters:

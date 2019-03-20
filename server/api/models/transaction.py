@@ -7,10 +7,10 @@ from django.utils.translation import ugettext_lazy as _
 from .plaid import Account
 from .budget import Budget
 
+BUTTER = "BU"
 PLAID = "PL"
-WILBUR = "WI"
 VENMO = "VE"
-ORIGINS = ((PLAID, "plaid"), (WILBUR, "wilbur"), (VENMO, "venmo"))
+ORIGINS = ((BUTTER, "butter"), (PLAID, "plaid"), (VENMO, "venmo"))
 
 
 class Transaction(models.Model):
@@ -29,7 +29,7 @@ class Transaction(models.Model):
     name = models.CharField(_("name"), max_length=100)
     origin_id = models.CharField(_("origin id"), blank=True, max_length=50)
     origin = models.CharField(
-        _("origin"), max_length=2, choices=ORIGINS, default=WILBUR
+        _("origin"), max_length=2, choices=ORIGINS, default=BUTTER
     )
     account = models.ForeignKey(
         Account,
