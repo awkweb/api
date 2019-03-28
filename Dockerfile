@@ -1,5 +1,5 @@
 # Start from python image
-FROM python:3.6
+FROM python:3.7.2
 
 # Create dir for code
 RUN mkdir /home/api

@@ -6,7 +6,7 @@ orbs:
   aws-s3: circleci/aws-s3@1.0.4
 defaults: &defaults
   docker:
-    - image: circleci/python:3.6.1
+    - image: circleci/python:3.7.2
 references:
   - &set_up_environment_variables
     run:
@@ -42,7 +42,7 @@ references:
     aws-cli/configure:
       aws-access-key-id: $AWS_ACCESS_KEY_ID
       aws-secret-access-key: $AWS_SECRET_ACCESS_KEY
-      aws-region: "$AWS_DEFAULT_REGION"
+      aws-region: '$AWS_DEFAULT_REGION'
   - &s3_sync
     run:
       name: Deploy to S3
@@ -90,10 +90,10 @@ jobs:
       - *aws_configure
       - *set_up_environment_variables
       - aws-ecs/update-service:
-          family: "butter-prod-api"
-          cluster-name: "butter-prod"
-          service-name: "api"
-          container-image-name-updates: "container=api,image-and-tag=${FULL_IMAGE_URL}"
+          family: 'butter-prod-api'
+          cluster-name: 'butter-prod'
+          service-name: 'api'
+          container-image-name-updates: 'container=api,image-and-tag=${FULL_IMAGE_URL}'
 workflows:
   build-deploy:
     jobs:
