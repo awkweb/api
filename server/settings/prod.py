@@ -11,5 +11,5 @@ ALLOWED_HOSTS = [
     "52.88.82.239",
 ]
 CORS_ORIGIN_REGEX_WHITELIST = (r"^(https?://)?(\w+\.)?butter\.so$",)
-DEBUG = True
+DEBUG = False
 STATIC_URL = os.getenv("DJANGO_STATIC_URL")

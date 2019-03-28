@@ -7,6 +7,7 @@ from ...models import Item
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
     list_display = ("item_id", "id", "user", "institution", "date_created")
+    exclude = ("access_token",)
     ordering = ["-date_created"]
 
     def created(self, obj):
