@@ -15,5 +15,4 @@ urlpatterns = [
     url(r"^auth/login/", views.LoginView.as_view()),
     url(r"^auth/logout/", views.LogoutView.as_view()),
     url(r"^auth/register/", views.RegisterView.as_view()),
-    url(r"^auth-api/", include("rest_framework.urls", namespace="rest_framework")),
 ]

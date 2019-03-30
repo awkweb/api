@@ -91,6 +91,7 @@ class ItemViewSet(ModelViewSet):
         try:
             data = request.data
             webhook_code = data.get("webhook_code")
+            print(webhook_code)
             if webhook_code is None:
                 return HttpResponseForbidden("Invalid signature header")
 
@@ -170,3 +171,6 @@ class ItemViewSet(ModelViewSet):
 
         except SuspiciousOperation:
             return HttpResponseForbidden("Invalid signature header")
+
+        except Exception as e:
+            print(e)
