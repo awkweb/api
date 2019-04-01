@@ -60,8 +60,6 @@ class TransactionViewSet(ModelViewSet):
         data = json.loads(request.body)
         budget_id = data.get("budget_id")
         transaction_ids = data.get("transaction_ids")
-        print(budget_id)
-        print(transaction_ids)
         for transaction_id in transaction_ids:
             transaction = Transaction.objects.get(id=transaction_id)
             transaction.budget = Budget.objects.get(id=budget_id)
